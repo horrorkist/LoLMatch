@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html>
       <head />
-      <body className="relative bg-gray-500">
+      <body className={`relative bg-gray-500`}>
         <Provider>
           <SWRConfig value={SWROptions}>
             <Header />

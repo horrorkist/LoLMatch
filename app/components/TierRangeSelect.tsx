@@ -1,17 +1,25 @@
 interface TierRangeSelectProps {
-  handleTierChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  handleTierChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  minTier: number;
+  maxTier: number;
+  disabled?: boolean;
 }
 
 export default function TierRangeSelect({
   handleTierChange,
+  minTier,
+  maxTier,
+  disabled,
 }: TierRangeSelectProps) {
   return (
-    <div className="flex items-center justify-between p-2 space-x-2">
+    <div className="flex items-center space-x-2">
       <select
+        disabled={disabled}
         onChange={handleTierChange}
-        className="h-12 p-2 text-sm text-white border border-black rounded-md focus:outline-none bg-slate-500"
+        className="h-12 p-2 text-xs text-white border border-black rounded-md focus:outline-none bg-slate-500"
         name="minTier"
         id="minTier"
+        defaultValue={minTier}
       >
         <option value="0">언랭크</option>
         <option value="1">아이언</option>
@@ -26,11 +34,12 @@ export default function TierRangeSelect({
       </select>
       <p>~</p>
       <select
+        disabled={disabled}
         onChange={handleTierChange}
-        className="h-12 p-2 text-sm text-white border border-black rounded-md focus:outline-none bg-slate-500"
+        className="h-12 p-2 text-xs text-white border border-black rounded-md focus:outline-none bg-slate-500"
         name="maxTier"
         id="maxTier"
-        defaultValue={9}
+        defaultValue={maxTier}
       >
         <option value="0">언랭크</option>
         <option value="1">아이언</option>

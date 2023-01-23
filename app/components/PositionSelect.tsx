@@ -1,28 +1,26 @@
 import { IFilterParams } from "../page";
 
 interface PositionSelectProps {
-  handlePositionChange: (e: React.MouseEvent<HTMLLIElement>) => void;
-  filterParams: IFilterParams;
+  handlePositionChange?: (e: React.MouseEvent<HTMLLIElement>) => void;
+  positions?: number[];
   PositionObj: string[];
 }
 
 export default function PositionSelect({
   handlePositionChange,
-  filterParams,
+  positions,
   PositionObj,
 }: PositionSelectProps) {
   return (
     <>
-      <ul className="flex border border-black divide-black rounded-md divide-x-1">
+      <ul className="flex border border-black divide-black rounded-md w-max divide-x-1">
         {[0, 1, 2, 3, 4, 5].map((i) => (
           <li
             key={i}
             onClick={handlePositionChange}
             data-position={i}
             className={`group relative flex items-center justify-center w-12 text-white list-none aspect-square first:rounded-l-md last:rounded-r-md position cursor-pointer ${
-              filterParams.positions.includes(i)
-                ? "bg-blue-500"
-                : "bg-white text-black"
+              positions?.includes(i) ? "bg-blue-500" : "bg-slate-500"
             }`}
           >
             {PositionObj[i]}

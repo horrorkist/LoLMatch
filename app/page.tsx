@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   ChangeEvent,
   ChangeEventHandler,
@@ -176,26 +177,61 @@ function Home() {
           onClick={() => setIsPostModalOpen(false)}
           className="fixed top-0 bottom-0 left-0 right-0 z-20 flex items-center justify-center w-screen h-screen bg-black bg-opacity-50 overlay"
         >
-          <div className="w-64 bg-white border border-blue-500 rounded-md aspect-square">
-            <header className="flex items-center justify-between border-b-2 border-black">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex flex-col text-gray-300 border-blue-500 rounded-md select-none min-w-min w-96 bg-slate-500 modal"
+          >
+            <header className="flex items-center justify-between border-b-2 border-gray-300">
               <h1 className="p-4">팀 이름</h1>
               <button className="p-4" onClick={() => setIsPostModalOpen(false)}>
                 X
               </button>
             </header>
-            <section>
-              <div></div>
-            </section>
+            <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
+              <div className="flex space-x-4">
+                <p>팀장</p>
+                <a
+                  href={`https://op.gg/summoners/kr/달려라불사조`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <p className="text-white">달려라불사조</p>
+                </a>
+              </div>
+              <section>
+                <ul className="flex flex-col space-y-4 justify-evenly">
+                  <li className="flex flex-col space-y-2">
+                    <p className="pl-2">큐 타입</p>
+                    <QTypeSelect disabled />
+                  </li>
+                  <li className="flex flex-col space-y-2">
+                    <p className="pl-2">원하는 포지션</p>
+                    <PositionSelect PositionObj={PositionObj} />
+                  </li>
+                  <li className="flex flex-col space-y-2">
+                    <p className="pl-2">원하는 티어</p>
+                    <TierRangeSelect minTier={4} maxTier={7} disabled />
+                  </li>
+                </ul>
+              </section>
+              <section>
+                <div className="flex self-end justify-evenly">
+                  <button
+                    onClick={() => setIsPostModalOpen(false)}
+                    className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
+                  >
+                    취소
+                  </button>
+                  <button className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white">
+                    신청
+                  </button>
+                </div>
+              </section>
+            </main>
           </div>
         </div>
       )}
       <main className={`flex flex-col w-[900px] justify-center m-auto `}>
-        <button
-          className="w-12 p-4 text-white bg-blue-500"
-          onClick={() => setIsPostModalOpen(true)}
-        >
-          Modal
-        </button>
         <ul className="flex items-center justify-between my-4 select-none searchParams">
           <li>
             <PostTypeButtons
@@ -206,7 +242,7 @@ function Home() {
           <li>
             <PositionSelect
               handlePositionChange={handlePositionChange}
-              filterParams={filterParams}
+              positions={filterParams.positions}
               PositionObj={PositionObj}
             />
           </li>
@@ -214,7 +250,11 @@ function Home() {
             <QTypeSelect handleQTypeChange={handleQTypeChange} />
           </li>
           <li>
-            <TierRangeSelect handleTierChange={handleTierChange} />
+            <TierRangeSelect
+              handleTierChange={handleTierChange}
+              minTier={0}
+              maxTier={9}
+            />
           </li>
         </ul>
         <ul className="flex space-x-4">
@@ -222,11 +262,12 @@ function Home() {
             <li key={i}>{`${PositionObj[position]}`}</li>
           ))}
         </ul>
-        <div className="flex flex-col divide-y-2 divide-white">
+        <div className="flex flex-col space-y-1">
           {posts?.flat().map((post, index) => (
             <div
               key={index}
-              className="w-full p-4 odd:bg-sky-500 even:bg-blue-300"
+              onClick={() => setIsPostModalOpen(true)} // delegation
+              className="w-full p-4 cursor-pointer odd:bg-sky-500 even:bg-blue-300"
             >
               {post.content}
               원하는 포지션 :
