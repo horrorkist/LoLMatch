@@ -183,6 +183,9 @@ function Home() {
                 X
               </button>
             </header>
+            <section>
+              <div></div>
+            </section>
           </div>
         </div>
       )}
