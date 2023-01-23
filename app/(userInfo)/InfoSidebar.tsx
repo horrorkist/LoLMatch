@@ -12,19 +12,19 @@ export default function InfoSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="h-auto p-4 w-52">
+    <div className="h-auto p-4 min-w-[140px] w-52">
       <ul className="space-y-4">
         {pathArray.map((path) => (
           <li
             key={path.path}
-            className={`w-full p-4 rounded-md ${
+            className={`w-full rounded-md ${
               path.path === pathname
                 ? "bg-gray-300 shadow-md text-black"
-                : "hover:pl-6 transition-all text-gray-500 hover:text-black"
+                : "text-gray-500 hover:text-black"
             }`}
           >
             <Link
-              className="block w-full h-full cursor-pointer"
+              className="block w-full h-full p-4 transition-all cursor-pointer hover:pl-6"
               href={path.path}
             >
               {path.name}

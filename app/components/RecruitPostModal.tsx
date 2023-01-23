@@ -4,6 +4,7 @@ import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierRangeSelect from "./TierRangeSelect";
 import TierSelect from "./TierSelect";
+import UserLinkName from "./UserLinkName";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
@@ -57,13 +58,7 @@ export default function RecruitPostModal({
           <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
             <div className="flex space-x-4">
               <p>팀장</p>
-              <a
-                href={`https://op.gg/summoners/kr/달려라불사조`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <p className="text-white">달려라불사조</p>
-              </a>
+              <UserLinkName>달려라불사조</UserLinkName>
             </div>
             <section>
               <ul className="flex flex-col space-y-4 justify-evenly">
@@ -92,13 +87,27 @@ export default function RecruitPostModal({
           </header>
           <form onSubmit={handleSubmit(onSubmit)} action="" className="flex-1">
             <main className="flex flex-col justify-between h-full p-4 space-y-6">
-              <div className="flex items-center space-x-4">
-                <p>소환사 명</p>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-2">
+                  <p className="pl-2">소환사 명</p>
+                  {errors.summonerName?.type === "required" && (
+                    <p className="text-sm text-red-700">
+                      {errors.summonerName.message}
+                    </p>
+                  )}
+                  {errors.summonerName?.type === "maxLength" && (
+                    <p className="text-sm text-red-700">
+                      소환사 명은 20자 이내로 입력해주세요.
+                    </p>
+                  )}
+                </div>
                 <input
-                  {...register("summonerName", { required: true })}
+                  {...register("summonerName", {
+                    required: "소환사 명을 입력해주세요.",
+                    maxLength: 20,
+                  })}
                   type="text"
-                  className="w-48 px-2 text-black rounded-md focus:outline-none"
-                  required
+                  className="w-48 p-2 pl-4 text-black rounded-md focus:outline-none"
                 />
               </div>
               <div className="flex flex-col space-y-4 justify-evenly">

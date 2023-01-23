@@ -86,7 +86,7 @@ function Home() {
     if (position === 0) {
       newPositions = [0];
     } else if (prevPositions.length === 1 && prevPositions[0] === position) {
-      return;
+      newPositions = [0];
     } else if (prevPositions.includes(position)) {
       newPositions = prevPositions.filter((p) => p !== 0 && p !== position);
     } else {

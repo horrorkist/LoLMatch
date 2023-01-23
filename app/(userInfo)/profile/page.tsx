@@ -56,10 +56,6 @@ export default function Profile() {
     }
   });
 
-  useEffect(() => {
-    console.log(positions);
-  });
-
   if (session.status === "loading") {
     return (
       <div className="flex items-center justify-center flex-1 text-2xl">
@@ -73,7 +69,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 bg-blue-300">
+    <div className="flex flex-col items-center justify-center flex-1 bg-blue-300 min-w-[1200px]">
       <div className="w-1/3 text-black bg-white border border-black rounded-md">
         <header className="p-4 border-b border-black">
           <p>이곳에 작성한 정보는 기본 정보로 등록됩니다.</p>
@@ -84,13 +80,25 @@ export default function Profile() {
           action=""
         >
           <div className="flex flex-col space-y-2">
-            <label className="block pl-2" htmlFor="name">
-              소환사 명{/*소환사 명을 입력해주세요.*/}
+            <label className="flex items-center pl-2" htmlFor="name">
+              소환사 명
+              {errors.name?.type === "required" && (
+                <p className="pl-2 text-xs text-red-500">
+                  {errors.name?.message}
+                </p>
+              )}
+              {errors.name?.type === "maxLength" && (
+                <p className="pl-2 text-xs text-red-500">
+                  소환사 명은 20자 이내로 입력해주세요.
+                </p>
+              )}
             </label>
             <input
-              required
               className="w-48 p-2 pl-4 text-base text-white border border-black rounded-md focus:outline-none focus:shadow-md bg-slate-500"
-              {...register("name", { required: true, maxLength: 20 })}
+              {...register("name", {
+                required: "소환사 명을 입력해주세요.",
+                maxLength: 20,
+              })}
               type="text"
               id="name"
             />
