@@ -19,7 +19,7 @@ export default function PositionSelect({
             key={i}
             onClick={handlePositionChange}
             data-position={i}
-            className={`group relative flex items-center justify-center w-12 text-white list-none aspect-square first:rounded-l-md last:rounded-r-md position cursor-pointer ${
+            className={`group relative hover:bg-slate-700 flex items-center justify-center w-12 text-white list-none aspect-square first:rounded-l-md last:rounded-r-md position cursor-pointer ${
               positions?.includes(i) ? "bg-blue-500" : "bg-slate-500"
             }`}
           >

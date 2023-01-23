@@ -14,24 +14,24 @@ function PostTypeButtons({
       <button
         onClick={handleRecruitChange}
         data-post_type={PostType.RECRUIT}
-        className={`flex rounded-md items-center justify-center h-12 px-2 cursor-pointer ${
+        className={`flex rounded-md hover:bg-slate-700 hover:text-white items-center justify-center h-12 px-2 cursor-pointer ${
           postType === PostType.RECRUIT
             ? "bg-blue-500 text-white"
             : "bg-white border border-black text-black"
         }`}
       >
-        구인 글 보기
+        팀원 구해요
       </button>
       <button
         onClick={handleRecruitChange}
         data-post_type={PostType.JOIN}
-        className={`flex rounded-md items-center justify-center h-12 px-2 cursor-pointer ${
+        className={`flex rounded-md hover:bg-slate-700 hover:text-white items-center justify-center h-12 px-2 cursor-pointer ${
           postType === PostType.JOIN
             ? "bg-blue-500 text-white"
             : "bg-white border border-black text-black"
         }`}
       >
-        구직 글 보기
+        팀을 원해요
       </button>
     </div>
   );

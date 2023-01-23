@@ -14,11 +14,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html>
       <head />
-      <body className={`relative bg-gray-500`}>
+      <body>
         <Provider>
           <SWRConfig value={SWROptions}>
-            <Header />
-            {children}
+            <div className="relative flex flex-col min-h-screen">
+              <Header />
+              {children}
+            </div>
           </SWRConfig>
         </Provider>
       </body>
