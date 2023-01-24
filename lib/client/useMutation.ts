@@ -6,18 +6,23 @@ interface UseMutaionState<T> {
   data?: T;
 }
 
-type UseMutaionResult<T> = [(data: any) => void, UseMutaionState<T>];
+type UseMutaionResult<T> = [
+  (data: any, method: Methods) => void,
+  UseMutaionState<T>
+];
+
+type Methods = "POST" | "PATCH";
 
 export default function useMutation<T = any>(url: string): UseMutaionResult<T> {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<undefined | any>(undefined);
   const [data, setData] = useState<undefined | any>(undefined);
 
-  async function mutate(data: any) {
+  async function mutate(data: any, method: Methods) {
     setLoading(true);
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method,
         headers: {
           "Content-Type": "application/json",
         },

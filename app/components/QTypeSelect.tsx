@@ -4,18 +4,21 @@ interface QTypeSelectProps {
   handleQTypeChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   disabled?: boolean;
   register?: UseFormRegister<any>;
+  [key: string]: any;
 }
 
 export default function QTypeSelect({
   handleQTypeChange,
   register,
   disabled,
+  rest,
 }: QTypeSelectProps) {
   return (
     <div>
       {register ? (
         <select
           {...register("qType")}
+          {...rest}
           disabled={disabled}
           onChange={handleQTypeChange}
           className="h-12 px-2 text-sm text-white border border-black rounded-md focus:outline-none bg-slate-500"
@@ -30,6 +33,7 @@ export default function QTypeSelect({
         </select>
       ) : (
         <select
+          {...rest}
           disabled={disabled}
           onChange={handleQTypeChange}
           className="h-12 px-2 text-sm text-white border border-black rounded-md focus:outline-none bg-slate-500"

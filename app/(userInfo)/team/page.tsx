@@ -3,14 +3,25 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import Overlay from "../../components/Overlay";
 import PositionSelect from "../../components/PositionSelect";
 import QTypeSelect from "../../components/QTypeSelect";
 import TeamEditModal from "../../components/TeamEditModal";
 import TierRangeSelect from "../../components/TierRangeSelect";
+import useSWR from "swr";
+import Button from "../../components/Button";
+import CreateTeamModal from "../../components/CreateTeamModal";
+import { Team } from "@prisma/client";
+import { useForm } from "react-hook-form";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
+
+interface TeamResponse {
+  ok: boolean;
+  team?: Team;
+  error?: any;
+  message?: string;
+}
 
 export default function TeamInfo() {
   const session = useSession({
@@ -22,19 +33,26 @@ export default function TeamInfo() {
   });
   const router = useRouter();
   const [inEditModal, setInEditModal] = useState(false);
+  const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
   const [inRequestModal, setInRequestModal] = useState(false);
+  const { data, isLoading } = useSWR<TeamResponse>("/api/team");
+  const { register } = useForm<{
+    qType: string;
+    minTier: number;
+    maxTier: number;
+  }>({
+    values: {
+      qType: data?.team?.qType || "0",
+      minTier: data?.team?.minTier || 0,
+      maxTier: data?.team?.maxTier || 9,
+    },
+  });
 
   const closeModal = () => {
     setInEditModal(false);
     setInRequestModal(false);
+    setInCreateTeamModal(false);
   };
-
-  // useEffect(() => {
-  //   if (session.status === "unauthenticated") {
-  //     alert("로그인이 필요합니다.");
-  //     router.push("/");
-  //   }
-  // });
 
   useEffect(() => {
     if (inEditModal || inRequestModal) {
@@ -52,20 +70,38 @@ export default function TeamInfo() {
     );
   }
 
-  // if (session.status === "unauthenticated") {
-  //   return null;
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center flex-1 text-2xl">
+        팀 정보를 불러 오는 중...
+      </div>
+    );
+  }
+
+  if (data && !data.ok && data.message === "존재하지 않는 팀입니다.") {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 space-y-4">
+        {inCreateTeamModal && (
+          <Overlay closeModal={closeModal}>
+            <CreateTeamModal closeModal={closeModal} />
+          </Overlay>
+        )}
+        <h1 className="text-2xl">아직 팀이 없으시네요!</h1>
+        <Button onClick={() => setInCreateTeamModal(true)}>팀 만들기</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1">
       {inEditModal && (
         <Overlay closeModal={closeModal}>
-          <TeamEditModal closeModal={closeModal} />
+          <TeamEditModal team={data?.team!} closeModal={closeModal} />
         </Overlay>
       )}
       <div className="flex flex-col w-2/3 min-w-[800px] px-12 py-8 space-y-4 bg-blue-300">
         <h1 className="flex items-center space-x-4 text-3xl text-white">
-          <p>팀 이름</p>
+          <p>{data?.team?.name}</p>
           <button
             onClick={() => setInEditModal(true)}
             className="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-400"
@@ -78,15 +114,27 @@ export default function TeamInfo() {
             <header className="flex p-4 border-b border-black justify-evenly">
               <div className="flex flex-col space-y-2">
                 <p className="pl-2">큐 타입</p>
-                <QTypeSelect disabled />
+                <QTypeSelect
+                  register={register}
+                  disabled
+                  value={data?.team?.qType}
+                />
               </div>
               <div className="flex flex-col space-y-2">
                 <p className="pl-2">모집 포지션</p>
-                <PositionSelect PositionObj={PositionObj} />
+                <PositionSelect
+                  positions={JSON.parse(data?.team?.positions || "[0]")}
+                  PositionObj={PositionObj}
+                />
               </div>
               <div className="flex flex-col space-y-2">
                 <p className="pl-2">모집 티어</p>
-                <TierRangeSelect disabled minTier={0} maxTier={9} />
+                <TierRangeSelect
+                  disabled
+                  register={register}
+                  minTier={data?.team?.minTier || 0}
+                  maxTier={data?.team?.maxTier || 9}
+                />
               </div>
             </header>
             <section className="grid flex-1 grid-cols-1 grid-rows-5 space-y-1">

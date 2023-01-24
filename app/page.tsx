@@ -9,6 +9,7 @@ import {
 } from "react";
 import useSWRInfinite from "swr/infinite";
 import "../styles/home.css";
+import Button from "./components/Button";
 import PositionSelect from "./components/PositionSelect";
 import PostTypeButtons from "./components/PostTypeButtons";
 import QTypeSelect from "./components/QTypeSelect";

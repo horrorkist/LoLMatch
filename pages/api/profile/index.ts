@@ -7,7 +7,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<any> {
-  if (req.method === "POST") {
+  if (req.method === "PATCH") {
     const session = await unstable_getServerSession(req, res, authOptions);
 
     if (!session || !session.user) {

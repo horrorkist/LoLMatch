@@ -31,7 +31,7 @@ export default function RecruitPostModal({
     },
   });
 
-  const [selectedPosition, setSelectedPosition] = useState<number[]>([0]);
+  const [selectedPosition, setSelectedPosition] = useState<number[]>([]);
 
   const handlePositionSelect = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>

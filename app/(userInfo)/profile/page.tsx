@@ -43,29 +43,14 @@ export default function Profile() {
   const [mutate, { loading, data }] = useMutation("api/profile");
 
   const onSubmit = async (data: UserInfoFormData) => {
-    const response = await fetch("api/profile", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    mutate(
+      {
         summonerName: data.summonerName,
         positions,
         tier: data.tier,
-      }),
-    });
-
-    const parsed = await response.json();
-
-    alert(parsed.message);
-  };
-
-  const onSubmit2 = async (data: UserInfoFormData) => {
-    mutate({
-      summonerName: data.summonerName,
-      positions,
-      tier: data.tier,
-    });
+      },
+      "PATCH"
+    );
   };
 
   const handlePositionChange = (
@@ -88,10 +73,10 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (!isLoading && fetchData) {
+    if (session.status === "authenticated" && !isLoading && fetchData) {
       setPositions(JSON.parse(fetchData.user?.positions));
     }
-  }, [fetchData]);
+  }, [fetchData, session, isLoading]);
 
   useEffect(() => {
     if (data) {
@@ -115,7 +100,7 @@ export default function Profile() {
         </header>
         <form
           className="flex flex-col p-4 space-y-6 text-sm"
-          onSubmit={handleSubmit(onSubmit2)}
+          onSubmit={handleSubmit(onSubmit)}
           action=""
         >
           <div className="flex flex-col space-y-2">

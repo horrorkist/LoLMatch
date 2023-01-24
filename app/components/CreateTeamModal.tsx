@@ -4,38 +4,31 @@ import { Team } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useMutation from "../../lib/client/useMutation";
-import { TeamData } from "./CreateTeamModal";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierRangeSelect from "./TierRangeSelect";
 
-interface TeamEditModalProps {
+interface CreateTeamModalProps {
   closeModal: () => void;
-  team: Team;
+}
+
+export interface TeamData {
+  name: string;
+  qType: number;
+  minTier: number;
+  maxTier: number;
 }
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
-export default function TeamEditModal({
-  closeModal,
-  team,
-}: TeamEditModalProps) {
+export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<TeamData>({
-    values: {
-      name: team.name,
-      qType: team.qType ? +team.qType : 0,
-      minTier: team.minTier || 0,
-      maxTier: team.maxTier || 9,
-    },
-  });
+  } = useForm<TeamData>();
 
-  const [positions, setPositions] = useState<number[]>(
-    JSON.parse(team.positions || "[0]")
-  );
+  const [positions, setPositions] = useState<number[]>([0]);
   const [mutate, { data, loading }] = useMutation("/api/team");
 
   const handlePositionChange = (
@@ -61,23 +54,22 @@ export default function TeamEditModal({
     console.log(data);
     mutate(
       {
-        team,
         name: data.name,
-        qType: data.qType + "",
+        qType: data.qType,
         minTier: data.minTier,
         maxTier: data.maxTier,
         positions,
       },
-      "PATCH"
+      "POST"
     );
   };
 
   useEffect(() => {
     if (data && data.ok) {
-      alert("팀 정보가 수정되었습니다.");
+      alert("팀이 성공적으로 생성되었습니다.");
       closeModal();
     }
-  }, [data]);
+  }, [loading, data]);
 
   return (
     <div
@@ -127,11 +119,7 @@ export default function TeamEditModal({
           </li>
           <li className="flex flex-col space-y-2">
             <p className="pl-2">모집 티어</p>
-            <TierRangeSelect
-              register={register}
-              minTier={team.minTier || 0}
-              maxTier={team.maxTier || 0}
-            />
+            <TierRangeSelect register={register} minTier={0} maxTier={9} />
           </li>
         </ul>
         <div className="flex justify-evenly">
