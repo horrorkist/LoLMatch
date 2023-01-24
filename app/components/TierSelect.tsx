@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { UseFormRegister } from "react-hook-form";
 
 interface TierSelectProps {

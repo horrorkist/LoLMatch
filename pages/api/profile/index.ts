@@ -29,6 +29,7 @@ export default async function handler(
           tier: +tier,
         },
       });
+
       return res.status(200).json({
         ok: true,
         message: "프로필이 성공적으로 업데이트 되었습니다.",

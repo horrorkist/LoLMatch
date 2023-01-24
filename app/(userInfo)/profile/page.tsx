@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,7 @@ import TierSelect from "../../components/TierSelect";
 import useSWR from "swr";
 import useMutation from "../../../lib/client/useMutation";
 
-interface UserInfoFormData {
+export interface UserInfoFormData {
   summonerName: string;
   tier: number;
 }
@@ -24,14 +24,21 @@ export default function Profile() {
       router.push("/");
     },
   });
+  const userId = session.data?.user.id;
   const router = useRouter();
   const [positions, setPositions] = useState<number[]>([0]);
+  const { data: fetchData, isLoading } = useSWR(`/api/users/${userId}`);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserInfoFormData>();
+  } = useForm<UserInfoFormData>({
+    values: {
+      summonerName: fetchData?.user?.summonerName || "",
+      tier: fetchData?.user?.tier || 0,
+    },
+  });
 
   const [mutate, { loading, data }] = useMutation("api/profile");
 
@@ -61,12 +68,6 @@ export default function Profile() {
     });
   };
 
-  useEffect(() => {
-    if (data && data.ok) {
-      alert(data.message);
-    }
-  }, [data]);
-
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
   ) => {
@@ -86,6 +87,18 @@ export default function Profile() {
     setPositions(newPositions);
   };
 
+  useEffect(() => {
+    if (!isLoading && fetchData) {
+      setPositions(JSON.parse(fetchData.user?.positions));
+    }
+  }, [fetchData]);
+
+  useEffect(() => {
+    if (data) {
+      alert(data.message);
+    }
+  }, [data]);
+
   if (session.status === "loading") {
     return (
       <div className="flex items-center justify-center flex-1 text-2xl">
@@ -96,7 +109,7 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 bg-blue-300 min-w-[1200px]">
-      <div className="w-1/3 text-black bg-white border border-black rounded-md">
+      <div className="w-1/3 text-black bg-white border border-black rounded-md max-w-[400px]">
         <header className="p-4 border-b border-black">
           <p>이곳에 작성한 정보는 기본 정보로 등록됩니다.</p>
         </header>

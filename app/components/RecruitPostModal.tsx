@@ -3,6 +3,8 @@
 import { useSession } from "next-auth/react";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
+import { UserInfoFormData } from "../(userInfo)/profile/page";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierRangeSelect from "./TierRangeSelect";
@@ -11,25 +13,23 @@ import UserLinkName from "./UserLinkName";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
-interface FormData {
-  summonerName: string;
-  tier: number;
-}
-
 export default function RecruitPostModal({
   closeModal,
 }: {
   closeModal: () => void;
 }) {
+  const session = useSession();
+  const { data, isLoading } = useSWR(`/api/users/${session.data?.user.id}`);
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
-  } = useForm<FormData>();
-
-  const session = useSession();
-  const user = session.data?.user;
+  } = useForm<UserInfoFormData>({
+    values: {
+      summonerName: data?.user?.summonerName || "",
+      tier: data?.user?.tier || 0,
+    },
+  });
 
   const [selectedPosition, setSelectedPosition] = useState<number[]>([0]);
 
@@ -44,15 +44,15 @@ export default function RecruitPostModal({
     setSelectedPosition([position]);
   };
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: UserInfoFormData) => {
     console.log(data);
   };
 
   useEffect(() => {
-    if (user && user.positions) {
-      setSelectedPosition(JSON.parse(user.positions));
+    if (!isLoading && data.ok) {
+      setSelectedPosition(JSON.parse(data.user.positions));
     }
-  }, [user]);
+  }, [isLoading, data]);
 
   return (
     <div
@@ -118,7 +118,6 @@ export default function RecruitPostModal({
                     required: "소환사 명을 입력해주세요.",
                     maxLength: 20,
                   })}
-                  defaultValue={user?.summonerName ? user.summonerName : ""}
                   type="text"
                   className="w-48 p-2 pl-4 text-black rounded-md focus:outline-none"
                 />
@@ -136,11 +135,7 @@ export default function RecruitPostModal({
                   <label htmlFor="myTier" className="pl-2">
                     내 티어
                   </label>
-                  <TierSelect
-                    defaultValue={user?.tier ? user.tier : 0}
-                    register={register}
-                    id="myTier"
-                  />
+                  <TierSelect register={register} id="myTier" />
                 </div>
               </div>
               <div className="flex justify-evenly">
