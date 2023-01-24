@@ -1,4 +1,7 @@
-import { MouseEvent, useState } from "react";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
@@ -25,6 +28,9 @@ export default function RecruitPostModal({
     formState: { errors },
   } = useForm<FormData>();
 
+  const session = useSession();
+  const user = session.data?.user;
+
   const [selectedPosition, setSelectedPosition] = useState<number[]>([0]);
 
   const handlePositionSelect = (
@@ -41,6 +47,12 @@ export default function RecruitPostModal({
   const onSubmit = (data: FormData) => {
     console.log(data);
   };
+
+  useEffect(() => {
+    if (user && user.positions) {
+      setSelectedPosition(JSON.parse(user.positions));
+    }
+  }, [user]);
 
   return (
     <div
@@ -67,11 +79,11 @@ export default function RecruitPostModal({
                   <QTypeSelect disabled />
                 </li>
                 <li className="flex flex-col space-y-2">
-                  <p className="pl-2">원하는 포지션</p>
+                  <p className="pl-2">모집 포지션</p>
                   <PositionSelect PositionObj={PositionObj} />
                 </li>
                 <li className="flex flex-col space-y-2">
-                  <p className="pl-2">원하는 티어</p>
+                  <p className="pl-2">모집 티어</p>
                   <TierRangeSelect minTier={4} maxTier={7} disabled />
                 </li>
               </ul>
@@ -106,6 +118,7 @@ export default function RecruitPostModal({
                     required: "소환사 명을 입력해주세요.",
                     maxLength: 20,
                   })}
+                  defaultValue={user?.summonerName ? user.summonerName : ""}
                   type="text"
                   className="w-48 p-2 pl-4 text-black rounded-md focus:outline-none"
                 />
@@ -123,7 +136,11 @@ export default function RecruitPostModal({
                   <label htmlFor="myTier" className="pl-2">
                     내 티어
                   </label>
-                  <TierSelect register={register} id="myTier" />
+                  <TierSelect
+                    defaultValue={user?.tier ? user.tier : 0}
+                    register={register}
+                    id="myTier"
+                  />
                 </div>
               </div>
               <div className="flex justify-evenly">

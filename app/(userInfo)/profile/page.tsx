@@ -6,17 +6,24 @@ import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import PositionSelect from "../../components/PositionSelect";
 import TierSelect from "../../components/TierSelect";
+import useSWR from "swr";
+import useMutation from "../../../lib/client/useMutation";
 
 interface UserInfoFormData {
-  name: string;
-  positions: number[];
+  summonerName: string;
   tier: number;
 }
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
 export default function Profile() {
-  const session = useSession();
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      alert("로그인이 필요합니다.");
+      router.push("/");
+    },
+  });
   const router = useRouter();
   const [positions, setPositions] = useState<number[]>([0]);
 
@@ -26,9 +33,39 @@ export default function Profile() {
     formState: { errors },
   } = useForm<UserInfoFormData>();
 
-  const onSubmit = (data: UserInfoFormData) => {
-    console.log(data);
+  const [mutate, { loading, data }] = useMutation("api/profile");
+
+  const onSubmit = async (data: UserInfoFormData) => {
+    const response = await fetch("api/profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        summonerName: data.summonerName,
+        positions,
+        tier: data.tier,
+      }),
+    });
+
+    const parsed = await response.json();
+
+    alert(parsed.message);
   };
+
+  const onSubmit2 = async (data: UserInfoFormData) => {
+    mutate({
+      summonerName: data.summonerName,
+      positions,
+      tier: data.tier,
+    });
+  };
+
+  useEffect(() => {
+    if (data && data.ok) {
+      alert(data.message);
+    }
+  }, [data]);
 
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -49,23 +86,12 @@ export default function Profile() {
     setPositions(newPositions);
   };
 
-  useEffect(() => {
-    if (session.status === "unauthenticated") {
-      alert("로그인이 필요합니다.");
-      router.push("/");
-    }
-  });
-
   if (session.status === "loading") {
     return (
       <div className="flex items-center justify-center flex-1 text-2xl">
         로그인 인증 중...
       </div>
     );
-  }
-
-  if (session.status === "unauthenticated") {
-    return null;
   }
 
   return (
@@ -76,18 +102,18 @@ export default function Profile() {
         </header>
         <form
           className="flex flex-col p-4 space-y-6 text-sm"
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onSubmit2)}
           action=""
         >
           <div className="flex flex-col space-y-2">
-            <label className="flex items-center pl-2" htmlFor="name">
+            <label className="flex items-center pl-2" htmlFor="summonerName">
               소환사 명
-              {errors.name?.type === "required" && (
+              {errors.summonerName?.type === "required" && (
                 <p className="pl-2 text-xs text-red-500">
-                  {errors.name?.message}
+                  {errors.summonerName?.message}
                 </p>
               )}
-              {errors.name?.type === "maxLength" && (
+              {errors.summonerName?.type === "maxLength" && (
                 <p className="pl-2 text-xs text-red-500">
                   소환사 명은 20자 이내로 입력해주세요.
                 </p>
@@ -95,12 +121,12 @@ export default function Profile() {
             </label>
             <input
               className="w-48 p-2 pl-4 text-base text-white border border-black rounded-md focus:outline-none focus:shadow-md bg-slate-500"
-              {...register("name", {
+              {...register("summonerName", {
                 required: "소환사 명을 입력해주세요.",
                 maxLength: 20,
               })}
               type="text"
-              id="name"
+              id="summonerName"
             />
           </div>
           <div className="flex flex-col space-y-2">

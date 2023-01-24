@@ -42,9 +42,19 @@ export default function TeamEditModal({ closeModal }: TeamEditModalProps) {
 
   return (
     <div
-      className="text-gray-300 rounded-md bg-slate-500"
+      className="relative text-gray-300 rounded-md bg-slate-500"
       onClick={(e) => e.stopPropagation()}
     >
+      {errors.name?.type === "required" && (
+        <p className="absolute left-0 right-0 p-4 text-white bg-red-500 rounded-md -top-24 text-xm">
+          {String(errors.name?.message)}
+        </p>
+      )}
+      {errors.name?.type === "maxLength" && (
+        <p className="absolute left-0 right-0 p-4 text-white bg-red-500 rounded-md -top-24 text-xm">
+          {String(errors.name?.message)}
+        </p>
+      )}
       <form
         onSubmit={handleSubmit((data) => console.log(data))}
         className="flex flex-col justify-between flex-1 p-4 space-y-6"
@@ -70,7 +80,7 @@ export default function TeamEditModal({ closeModal }: TeamEditModalProps) {
             <QTypeSelect register={register} />
           </li>
           <li className="flex flex-col space-y-2">
-            <p className="pl-2">원하는 포지션</p>
+            <p className="pl-2">모집 포지션</p>
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={positions}
@@ -78,7 +88,7 @@ export default function TeamEditModal({ closeModal }: TeamEditModalProps) {
             />
           </li>
           <li className="flex flex-col space-y-2">
-            <p className="pl-2">원하는 티어</p>
+            <p className="pl-2">모집 티어</p>
             <TierRangeSelect register={register} minTier={4} maxTier={7} />
           </li>
         </ul>

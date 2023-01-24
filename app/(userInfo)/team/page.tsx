@@ -13,7 +13,13 @@ import TierRangeSelect from "../../components/TierRangeSelect";
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
 export default function TeamInfo() {
-  const session = useSession();
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      alert("로그인이 필요합니다.");
+      router.push("/");
+    },
+  });
   const router = useRouter();
   const [inEditModal, setInEditModal] = useState(false);
   const [inRequestModal, setInRequestModal] = useState(false);
@@ -23,12 +29,12 @@ export default function TeamInfo() {
     setInRequestModal(false);
   };
 
-  useEffect(() => {
-    if (session.status === "unauthenticated") {
-      alert("로그인이 필요합니다.");
-      router.push("/");
-    }
-  });
+  // useEffect(() => {
+  //   if (session.status === "unauthenticated") {
+  //     alert("로그인이 필요합니다.");
+  //     router.push("/");
+  //   }
+  // });
 
   useEffect(() => {
     if (inEditModal || inRequestModal) {
@@ -46,9 +52,9 @@ export default function TeamInfo() {
     );
   }
 
-  if (session.status === "unauthenticated") {
-    return null;
-  }
+  // if (session.status === "unauthenticated") {
+  //   return null;
+  // }
 
   return (
     <div className="flex flex-1">
@@ -75,11 +81,11 @@ export default function TeamInfo() {
                 <QTypeSelect disabled />
               </div>
               <div className="flex flex-col space-y-2">
-                <p className="pl-2">원하는 포지션</p>
+                <p className="pl-2">모집 포지션</p>
                 <PositionSelect PositionObj={PositionObj} />
               </div>
               <div className="flex flex-col space-y-2">
-                <p className="pl-2">원하는 티어</p>
+                <p className="pl-2">모집 티어</p>
                 <TierRangeSelect disabled minTier={0} maxTier={9} />
               </div>
             </header>
