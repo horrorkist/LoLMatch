@@ -11,14 +11,18 @@ import TierRangeSelect from "../../components/TierRangeSelect";
 import useSWR from "swr";
 import Button from "../../components/Button";
 import CreateTeamModal from "../../components/CreateTeamModal";
-import { Team } from "@prisma/client";
+import { Team, User } from "@prisma/client";
 import { useForm } from "react-hook-form";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
+export interface TeamWithMembers extends Team {
+  users: User[];
+}
+
 interface TeamResponse {
   ok: boolean;
-  team?: Team;
+  team?: TeamWithMembers;
   error?: any;
   message?: string;
 }
@@ -47,11 +51,44 @@ export default function TeamInfo() {
       maxTier: data?.team?.maxTier || 9,
     },
   });
+  const [isChief, setIsChief] = useState(false);
 
   const closeModal = () => {
     setInEditModal(false);
     setInRequestModal(false);
     setInCreateTeamModal(false);
+  };
+
+  const onDeleteClick = () => {
+    if (!data || !data.team) return;
+
+    if (confirm("정말로 팀을 해체하시겠습니까?")) {
+      if (data.team.users.length > 1) {
+        alert("팀원이 남아있어 팀을 해체할 수 없습니다.");
+        return;
+      }
+
+      if (session?.data?.user?.id !== data.team.chiefId) {
+        alert("권한이 없습니다.");
+        return;
+      }
+
+      fetch("/api/team", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ teamId: data.team.id }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.ok) {
+            alert("팀을 해체했습니다.");
+          } else {
+            alert(data.message);
+          }
+        });
+    }
   };
 
   useEffect(() => {
@@ -61,6 +98,12 @@ export default function TeamInfo() {
       document.body.style.overflow = "unset";
     }
   });
+
+  useEffect(() => {
+    if (data && data.ok) {
+      setIsChief(data.team?.chiefId === session?.data?.user.id);
+    }
+  }, [data]);
 
   if (session.status === "loading") {
     return (
@@ -100,14 +143,19 @@ export default function TeamInfo() {
         </Overlay>
       )}
       <div className="flex flex-col w-2/3 min-w-[800px] px-12 py-8 space-y-4 bg-blue-300">
-        <h1 className="flex items-center space-x-4 text-3xl text-white">
+        <h1 className="flex items-center justify-start w-full text-3xl text-white">
           <p>{data?.team?.name}</p>
-          <button
-            onClick={() => setInEditModal(true)}
-            className="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-400"
-          >
+          <Button className="ml-4 text-sm" onClick={() => setInEditModal(true)}>
             팀 정보 수정
-          </button>
+          </Button>
+          {isChief && (
+            <Button
+              onClick={onDeleteClick}
+              className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
+            >
+              팀 해체하기
+            </Button>
+          )}
         </h1>
         <div className="flex-1">
           <section className="flex flex-col w-full h-full overflow-hidden bg-white rounded-md">

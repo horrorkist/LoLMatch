@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import {
   ChangeEvent,
   ChangeEventHandler,
@@ -15,6 +16,10 @@ import PostTypeButtons from "./components/PostTypeButtons";
 import QTypeSelect from "./components/QTypeSelect";
 import RecruitPostModal from "./components/RecruitPostModal";
 import TierRangeSelect from "./components/TierRangeSelect";
+import useSWR from "swr";
+import Link from "next/link";
+import Overlay from "./components/Overlay";
+import CreateTeamModal from "./components/CreateTeamModal";
 
 export interface Post {
   id: number;
@@ -66,6 +71,11 @@ function Home() {
   };
 
   const { isLoading, data, setSize } = useSWRInfinite(getKey);
+
+  // session
+  const session = useSession();
+  const { data: teamData } = useSWR("/api/team");
+
   //   `/api/posts/${postType === PostType.RECRUIT ? "recruit" : "join"}?page=${
   //     page.current
   //   }&limit=${limit}`
@@ -134,6 +144,14 @@ function Home() {
     if (postType === PostType.RECRUIT) setIsPostModalOpen(true);
   };
 
+  const handleCreateTeam = () => {
+    if (session.status === "unauthenticated") {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    setInCreateTeamModal(true);
+  };
+
   // 데이터 로드
   useEffect(() => {
     if (!isLoading && data) {
@@ -143,9 +161,11 @@ function Home() {
 
   // Modal 관련
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
 
   const closeModal = () => {
     setIsPostModalOpen(false);
+    setInCreateTeamModal(false);
   };
 
   // useEffect(() => {
@@ -172,18 +192,40 @@ function Home() {
   // }, [isLoading]);
 
   useEffect(() => {
-    if (isPostModalOpen) {
+    if (isPostModalOpen || inCreateTeamModal) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-  }, [isPostModalOpen]);
+  }, [isPostModalOpen, inCreateTeamModal]);
 
   return (
-    <div className={`relative`}>
+    <div className={`relative p-4`}>
       {isPostModalOpen && <RecruitPostModal closeModal={closeModal} />}
-      <main className={`flex flex-col w-[900px] justify-center m-auto `}>
-        <ul className="flex items-center justify-between my-4 select-none searchParams">
+      {inCreateTeamModal && (
+        <Overlay closeModal={closeModal}>
+          <CreateTeamModal closeModal={closeModal} />
+        </Overlay>
+      )}
+      <main
+        className={`flex flex-col w-[900px] justify-center m-auto space-y-4 `}
+      >
+        <div className="flex flex-row-reverse">
+          {postType === PostType.JOIN ? (
+            <Button>소환사 등록하기</Button>
+          ) : (teamData?.ok === false &&
+              teamData?.message === "존재하지 않는 팀입니다.") ||
+            session.status === "unauthenticated" ? (
+            <Button onClick={handleCreateTeam}>팀 만들기</Button>
+          ) : teamData?.ok ? (
+            <Link href={"/team"}>
+              <Button>내 팀 보기</Button>
+            </Link>
+          ) : (
+            <Button>로드 중...</Button>
+          )}
+        </div>
+        <ul className="flex items-center justify-between select-none searchParams">
           <li>
             <PostTypeButtons
               handleRecruitChange={handleRecruitChange}

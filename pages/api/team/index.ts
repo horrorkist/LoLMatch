@@ -39,6 +39,9 @@ export default async function handler(
         where: {
           id: foundUser.teamId || "",
         },
+        include: {
+          users: true,
+        },
       });
 
       if (!team) {
@@ -85,6 +88,13 @@ export default async function handler(
         });
       }
 
+      if (foundUser.teamId) {
+        return res.status(400).json({
+          ok: false,
+          message: "이미 팀에 가입되어 있습니다.",
+        });
+      }
+
       const team = await client.team.create({
         data: {
           name,
@@ -92,6 +102,7 @@ export default async function handler(
           minTier: +minTier,
           maxTier: +maxTier,
           qType,
+          chiefId: foundUser.id,
           users: {
             connect: {
               id: userId,
@@ -153,8 +164,51 @@ export default async function handler(
         message: "서버 에러가 발생했습니다. 잠시 후 다시 시도해주세요.",
       });
     }
-  }
-  {
+  } else if (req.method === "DELETE") {
+    const { teamId } = req.body;
+    const {
+      user: { id },
+    } = session;
+
+    const team = await client.team.findUnique({
+      where: {
+        id: teamId || "",
+      },
+    });
+
+    if (!team) {
+      return res.status(400).json({
+        ok: false,
+        message: "팀 정보가 없습니다.",
+      });
+    }
+
+    if (team.chiefId !== id) {
+      return res.status(403).json({
+        ok: false,
+        message: "권한이 없습니다.",
+      });
+    }
+
+    try {
+      const deletedTeam = await client.team.delete({
+        where: {
+          id: team.id || "",
+        },
+      });
+
+      return res.status(201).json({
+        ok: true,
+        deletedTeam,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        ok: false,
+        error,
+        message: "서버 에러가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      });
+    }
+  } else {
     return res.status(405).json({
       ok: false,
       message: "허용되지 않은 메서드입니다.",

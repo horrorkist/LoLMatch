@@ -51,7 +51,6 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
   };
 
   const onSubmit = (data: TeamData) => {
-    console.log(data);
     mutate(
       {
         name: data.name,

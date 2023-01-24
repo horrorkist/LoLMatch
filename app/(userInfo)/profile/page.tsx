@@ -74,7 +74,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (session.status === "authenticated" && !isLoading && fetchData) {
-      setPositions(JSON.parse(fetchData.user?.positions));
+      setPositions(JSON.parse(fetchData.user?.positions || "[0]"));
     }
   }, [fetchData, session, isLoading]);
 
