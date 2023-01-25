@@ -50,7 +50,7 @@ export default function RecruitPostModal({
 
   useEffect(() => {
     if (!isLoading && data.ok) {
-      setSelectedPosition(JSON.parse(data.user.positions));
+      setSelectedPosition(JSON.parse(data?.user?.positions || "[0]"));
     }
   }, [isLoading, data]);
 

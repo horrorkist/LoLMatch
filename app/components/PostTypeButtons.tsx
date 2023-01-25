@@ -1,4 +1,4 @@
-import { PostType } from "../page";
+import { PostType } from "../../lib/client/types";
 
 interface PostTypeButtonsProps {
   handleRecruitChange: (e: React.MouseEvent<HTMLButtonElement>) => void;

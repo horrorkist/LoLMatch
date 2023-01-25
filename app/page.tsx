@@ -20,6 +20,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import Overlay from "./components/Overlay";
 import CreateTeamModal from "./components/CreateTeamModal";
+import { PostType } from "../lib/client/types";
 
 export interface Post {
   id: number;
@@ -36,11 +37,6 @@ export interface IFilterParams {
   minTier: number;
   maxTier: number;
   positions: number[];
-}
-
-export enum PostType {
-  RECRUIT = 0,
-  JOIN = 1,
 }
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
@@ -198,6 +194,10 @@ function Home() {
       document.body.style.overflow = "unset";
     }
   }, [isPostModalOpen, inCreateTeamModal]);
+
+  useEffect(() => {
+    console.log(session);
+  }, [session]);
 
   return (
     <div className={`relative p-4`}>
