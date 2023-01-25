@@ -1,6 +1,6 @@
 "use client";
 
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -43,6 +43,7 @@ export default function Profile() {
   const [mutate, { loading, data }] = useMutation("api/profile");
 
   const onSubmit = async (data: UserInfoFormData) => {
+    if (loading) return;
     mutate(
       {
         summonerName: data.summonerName,

@@ -21,6 +21,7 @@ import Link from "next/link";
 import Overlay from "./components/Overlay";
 import CreateTeamModal from "./components/CreateTeamModal";
 import { PostType } from "../lib/client/types";
+import RegisterModal from "./components/RegisterModal";
 
 export interface Post {
   id: number;
@@ -148,6 +149,10 @@ function Home() {
     setInCreateTeamModal(true);
   };
 
+  const handleRegister = () => {
+    setInRegisterModal(true);
+  };
+
   // 데이터 로드
   useEffect(() => {
     if (!isLoading && data) {
@@ -158,10 +163,12 @@ function Home() {
   // Modal 관련
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
+  const [inRegisterModal, setInRegisterModal] = useState(false);
 
   const closeModal = () => {
     setIsPostModalOpen(false);
     setInCreateTeamModal(false);
+    setInRegisterModal(false);
   };
 
   // useEffect(() => {
@@ -207,12 +214,17 @@ function Home() {
           <CreateTeamModal closeModal={closeModal} />
         </Overlay>
       )}
+      {inRegisterModal && (
+        <Overlay closeModal={closeModal}>
+          <RegisterModal closeModal={closeModal} />
+        </Overlay>
+      )}
       <main
         className={`flex flex-col w-[900px] justify-center m-auto space-y-4 `}
       >
         <div className="flex flex-row-reverse">
           {postType === PostType.JOIN ? (
-            <Button>소환사 등록하기</Button>
+            <Button onClick={handleRegister}>소환사 등록하기</Button>
           ) : (teamData?.ok === false &&
               teamData?.message === "존재하지 않는 팀입니다.") ||
             session.status === "unauthenticated" ? (

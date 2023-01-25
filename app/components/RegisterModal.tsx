@@ -1,42 +1,40 @@
 "use client";
 
-import { Team } from "@prisma/client";
+import { JoinPost } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useMutation from "../../lib/client/useMutation";
-import { TeamData } from "./CreateTeamModal";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
-import TierRangeSelect from "./TierRangeSelect";
+import TierSelect from "./TierSelect";
 
-interface TeamEditModalProps {
+interface RegisterModalProps {
   closeModal: () => void;
-  team: Team;
+}
+
+export interface SummonerData {
+  name: string;
+  qType: number;
+  tier: number;
+}
+
+interface RegisterResponse {
+  ok: boolean;
+  joinPost: JoinPost;
 }
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
-export default function TeamEditModal({
-  closeModal,
-  team,
-}: TeamEditModalProps) {
+export default function RegisterModal({ closeModal }: RegisterModalProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<TeamData>({
-    values: {
-      name: team.name,
-      qType: team.qType ? +team.qType : 0,
-      minTier: team.minTier || 0,
-      maxTier: team.maxTier || 9,
-    },
-  });
+  } = useForm<SummonerData>();
 
-  const [positions, setPositions] = useState<number[]>(
-    JSON.parse(team.positions || "[0]")
-  );
-  const [mutate, { data, loading }] = useMutation("/api/team");
+  const [positions, setPositions] = useState<number[]>([0]);
+  const [mutate, { data, loading }] =
+    useMutation<RegisterResponse>("/api/register");
 
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -57,27 +55,25 @@ export default function TeamEditModal({
     setPositions(newPositions);
   };
 
-  const onSubmit = (data: TeamData) => {
+  const onSubmit = (data: SummonerData) => {
     if (loading) return;
     mutate(
       {
-        team,
         name: data.name,
-        qType: data.qType + "",
-        minTier: data.minTier,
-        maxTier: data.maxTier,
+        qType: data.qType,
+        tier: data.tier,
         positions,
       },
-      "PATCH"
+      "POST"
     );
   };
 
   useEffect(() => {
     if (data && data.ok) {
-      alert("팀 정보가 수정되었습니다.");
+      alert("소환사 정보가 성공적으로 등록되었습니다.");
       closeModal();
     }
-  }, [data]);
+  }, [loading, data]);
 
   return (
     <div
@@ -100,13 +96,13 @@ export default function TeamEditModal({
       >
         <ul className="flex flex-col space-y-4 justify-evenly">
           <li className="flex items-center space-x-4">
-            <p className="pl-2">팀 이름</p>
+            <p className="pl-2">소환사 이름</p>
             <input
               {...register("name", {
-                required: "팀 이름을 입력해주세요.",
+                required: "소환사 이름을 입력해주세요.",
                 maxLength: {
-                  value: 10,
-                  message: "팀 이름은 10자 이내로 입력해주세요.",
+                  value: 20,
+                  message: "소환사 이름은 10자 이내로 입력해주세요.",
                 },
               })}
               className="px-4 py-2 text-black rounded-md focus:outline-none"
@@ -118,7 +114,7 @@ export default function TeamEditModal({
             <QTypeSelect register={register} />
           </li>
           <li className="flex flex-col space-y-2">
-            <p className="pl-2">모집 포지션</p>
+            <p className="pl-2">선호 포지션</p>
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={positions}
@@ -126,12 +122,8 @@ export default function TeamEditModal({
             />
           </li>
           <li className="flex flex-col space-y-2">
-            <p className="pl-2">모집 티어</p>
-            <TierRangeSelect
-              register={register}
-              minTier={team.minTier || 0}
-              maxTier={team.maxTier || 0}
-            />
+            <p className="pl-2">내 티어</p>
+            <TierSelect register={register} />
           </li>
         </ul>
         <div className="flex justify-evenly">
