@@ -20,7 +20,6 @@ export interface SummonerData {
 
 interface RegisterResponse {
   ok: boolean;
-  joinPost: JoinPost;
 }
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
@@ -33,8 +32,10 @@ export default function RegisterModal({ closeModal }: RegisterModalProps) {
   } = useForm<SummonerData>();
 
   const [positions, setPositions] = useState<number[]>([0]);
-  const [mutate, { data, loading }] =
-    useMutation<RegisterResponse>("/api/register");
+  // const [mutate, { data }] = useMutation<RegisterResponse>("/api/users/me");
+  const [loading, setLoading] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [error, setError] = useState(null);
 
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -55,25 +56,61 @@ export default function RegisterModal({ closeModal }: RegisterModalProps) {
     setPositions(newPositions);
   };
 
-  const onSubmit = (data: SummonerData) => {
-    if (loading) return;
-    mutate(
-      {
-        name: data.name,
-        qType: data.qType,
-        tier: data.tier,
-        positions,
-      },
-      "POST"
-    );
+  const onSubmit = async (data: SummonerData) => {
+    if (loading) {
+      alert("잠시만 기다려주세요.");
+      return;
+    }
+
+    setLoading(true);
+
+    const user = await (
+      await fetch("/api/users/me", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          summonerName: data.name,
+          tier: data.tier,
+          positions,
+        }),
+      })
+    ).json();
+
+    const response = await (
+      await fetch("/api/posts/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          qType: data.qType,
+        }),
+      })
+    ).json();
+
+    if (!response.ok) {
+      setError(response.error);
+    }
+
+    setOk(user.ok);
+
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (data && data.ok) {
+    if (ok) {
       alert("소환사 정보가 성공적으로 등록되었습니다.");
       closeModal();
     }
-  }, [loading, data]);
+  }, [ok]);
+
+  useEffect(() => {
+    if (error) {
+      alert(error);
+    }
+  }, [error]);
 
   return (
     <div

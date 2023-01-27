@@ -24,10 +24,9 @@ export default function Profile() {
       router.push("/");
     },
   });
-  const userId = session.data?.user.id;
   const router = useRouter();
   const [positions, setPositions] = useState<number[]>([0]);
-  const { data: fetchData, isLoading } = useSWR(`/api/users/${userId}`);
+  const { data: userData, isLoading } = useSWR(`/api/users/me`);
 
   const {
     register,
@@ -35,15 +34,18 @@ export default function Profile() {
     formState: { errors },
   } = useForm<UserInfoFormData>({
     values: {
-      summonerName: fetchData?.user?.summonerName || "",
-      tier: fetchData?.user?.tier || 0,
+      summonerName: userData?.user?.summonerName || "",
+      tier: userData?.user?.tier || 0,
     },
   });
 
   const [mutate, { loading, data }] = useMutation("api/profile");
 
   const onSubmit = async (data: UserInfoFormData) => {
-    if (loading) return;
+    if (loading) {
+      alert("잠시만 기다려주세요.");
+      return;
+    }
     mutate(
       {
         summonerName: data.summonerName,
@@ -74,10 +76,10 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (session.status === "authenticated" && !isLoading && fetchData) {
-      setPositions(JSON.parse(fetchData.user?.positions || "[0]"));
+    if (session.status === "authenticated" && !isLoading && userData) {
+      setPositions(JSON.parse(userData.user?.positions || "[0]"));
     }
-  }, [fetchData, session, isLoading]);
+  }, [userData, session, isLoading]);
 
   useEffect(() => {
     if (data) {

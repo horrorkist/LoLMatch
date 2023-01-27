@@ -54,7 +54,7 @@ const initialFilterParams: IFilterParams = {
 
 function Home() {
   // post 관련
-  const [postType, setPostType] = useState(PostType.RECRUIT);
+  const [postType, setPostType] = useState(PostType.JOIN);
   const [posts, setPosts] = useState<Post[]>([]);
   const [filterParams, setFilterParams] =
     useState<IFilterParams>(initialFilterParams);
@@ -201,10 +201,6 @@ function Home() {
       document.body.style.overflow = "unset";
     }
   }, [isPostModalOpen, inCreateTeamModal]);
-
-  useEffect(() => {
-    console.log(session);
-  }, [session]);
 
   return (
     <div className={`relative p-4`}>

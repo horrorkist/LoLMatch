@@ -51,6 +51,10 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
   };
 
   const onSubmit = (data: TeamData) => {
+    if (loading) {
+      alert("처리 중입니다.");
+      return;
+    }
     mutate(
       {
         name: data.name,

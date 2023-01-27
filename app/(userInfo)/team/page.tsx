@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Overlay from "../../components/Overlay";
 import PositionSelect from "../../components/PositionSelect";
@@ -28,18 +27,16 @@ interface TeamResponse {
 }
 
 export default function TeamInfo() {
-  const session = useSession({
-    required: true,
-    onUnauthenticated() {
-      alert("로그인이 필요합니다.");
-      router.push("/");
-    },
-  });
-  const router = useRouter();
+  const session = useSession();
   const [inEditModal, setInEditModal] = useState(false);
   const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
   const [inRequestModal, setInRequestModal] = useState(false);
-  const { data, isLoading } = useSWR<TeamResponse>("/api/team");
+  const {
+    data,
+    isLoading,
+    mutate: teamMutate,
+  } = useSWR<TeamResponse>("/api/team");
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { register } = useForm<{
     qType: string;
     minTier: number;
@@ -60,8 +57,11 @@ export default function TeamInfo() {
   };
 
   const onDeleteClick = () => {
+    if (deleteLoading) {
+      alert("잠시만 기다려주세요.");
+      return;
+    }
     if (!data || !data.team) return;
-
     if (confirm("정말로 팀을 해체하시겠습니까?")) {
       if (data.team.users.length > 1) {
         alert("팀원이 남아있어 팀을 해체할 수 없습니다.");
@@ -72,7 +72,7 @@ export default function TeamInfo() {
         alert("권한이 없습니다.");
         return;
       }
-
+      setDeleteLoading(true);
       fetch("/api/team", {
         method: "DELETE",
         headers: {
@@ -84,11 +84,24 @@ export default function TeamInfo() {
         .then((data) => {
           if (data.ok) {
             alert("팀을 해체했습니다.");
+            teamMutate({
+              ok: false,
+            });
+            setDeleteLoading(false);
           } else {
             alert(data.message);
           }
         });
     }
+  };
+
+  const onCreateClick = () => {
+    if (session?.status !== "authenticated") {
+      alert("로그인 후 이용해주세요.");
+      return;
+    }
+
+    setInCreateTeamModal(true);
   };
 
   useEffect(() => {
@@ -121,7 +134,11 @@ export default function TeamInfo() {
     );
   }
 
-  if (data && !data.ok && data.message === "존재하지 않는 팀입니다.") {
+  if (
+    data &&
+    !data.ok &&
+    (data.message === "존재하지 않는 팀입니다." || data.message === "세션 없음")
+  ) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 space-y-4">
         {inCreateTeamModal && (
@@ -130,7 +147,7 @@ export default function TeamInfo() {
           </Overlay>
         )}
         <h1 className="text-2xl">아직 팀이 없으시네요!</h1>
-        <Button onClick={() => setInCreateTeamModal(true)}>팀 만들기</Button>
+        <Button onClick={onCreateClick}>팀 만들기</Button>
       </div>
     );
   }
@@ -145,15 +162,27 @@ export default function TeamInfo() {
       <div className="flex flex-col w-2/3 min-w-[800px] px-12 py-8 space-y-4 bg-blue-300">
         <h1 className="flex items-center justify-start w-full text-3xl text-white">
           <p>{data?.team?.name}</p>
-          <Button className="ml-4 text-sm" onClick={() => setInEditModal(true)}>
-            팀 정보 수정
-          </Button>
-          {isChief && (
+          {isChief ? (
+            <>
+              <Button
+                className="ml-4 text-sm"
+                onClick={() => setInEditModal(true)}
+              >
+                팀 정보 수정
+              </Button>
+              <Button
+                onClick={onDeleteClick}
+                className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
+              >
+                팀 해체하기
+              </Button>
+            </>
+          ) : (
             <Button
-              onClick={onDeleteClick}
+              onClick={() => console.log("팀 탈퇴하기")}
               className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
             >
-              팀 해체하기
+              팀 탈퇴하기
             </Button>
           )}
         </h1>

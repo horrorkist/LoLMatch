@@ -1,12 +1,36 @@
 "use client";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 function Header() {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathName = usePathname();
+
+  const handleLoginClick = async () => {
+    const response = await fetch("/api/ironsession");
+    const ironsession = await response.json();
+    if (
+      ironsession.user &&
+      confirm("비로그인 정보는 삭제됩니다. 로그인 하시겠습니까?")
+    ) {
+      // delete iron session user data
+      await fetch(`/api/ironsession`, {
+        method: "DELETE",
+      });
+
+      // destory iron session
+      await fetch("/api/register/delete");
+
+      signIn();
+    } else if (!ironsession.user) {
+      signIn();
+    }
+  };
+
+  const handleLogoutClick = () => {
+    signOut();
+  };
 
   return (
     <header className="flex items-center justify-center w-full p-5 text-xl text-white bg-blue-500">
@@ -20,17 +44,10 @@ function Header() {
           {session ? (
             <>
               <Link href="/profile">내 정보</Link>
-              <button
-                onClick={() => {
-                  router.push("/");
-                  signOut();
-                }}
-              >
-                로그아웃
-              </button>
+              <button onClick={handleLogoutClick}>로그아웃</button>
             </>
           ) : (
-            <button onClick={() => signIn()}>로그인</button>
+            <button onClick={handleLoginClick}>로그인</button>
           )}
         </div>
       </div>

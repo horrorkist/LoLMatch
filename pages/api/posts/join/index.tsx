@@ -1,5 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { unstable_getServerSession } from "next-auth";
 import { IFilterParams, Post } from "../../../../app/page";
+import { authOptions } from "../../auth/[...nextauth]";
+import client from "../../../../lib/server/client";
+import { withIronSessionApiRoute } from "iron-session/next";
+import { sessionOptions } from "../../users/me";
 
 const p: Post[] = [];
 
@@ -52,7 +57,7 @@ function getMatchedPosts(
   return filteredPosts;
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { page, limit, filter } = req.query;
     const parsedFilter = JSON.parse(filter as string);
@@ -62,5 +67,49 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       (Number(page) + 1) * Number(limit)
     );
     return res.status(200).json(modified);
+  } else if (req.method === "POST") {
+    const NextAuthSession = await unstable_getServerSession(
+      req,
+      res,
+      authOptions
+    );
+    const { session: IronSession } = req;
+
+    const userId = NextAuthSession?.user?.id || IronSession?.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ ok: false, message: "권한이 없습니다." });
+    }
+
+    try {
+      const { qType } = req.body;
+      const joinPost = await client.joinPost.upsert({
+        where: {
+          userId,
+        },
+        create: {
+          qType,
+          createdAt: new Date(),
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+        },
+        update: {
+          qType,
+          createdAt: new Date(),
+        },
+      });
+
+      return res.status(200).json({ ok: true, joinPost });
+    } catch (e) {
+      console.log(e);
+    }
+    return res
+      .status(500)
+      .json({ ok: false, message: "Internal Server Error" });
   }
 }
+
+export default withIronSessionApiRoute(handler, sessionOptions);

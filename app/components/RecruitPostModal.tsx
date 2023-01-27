@@ -19,7 +19,7 @@ export default function RecruitPostModal({
   closeModal: () => void;
 }) {
   const session = useSession();
-  const { data, isLoading } = useSWR(`/api/users/${session.data?.user.id}`);
+  const { data, isLoading } = useSWR(`/api/users/me`);
   const {
     register,
     handleSubmit,

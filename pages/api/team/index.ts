@@ -3,22 +3,30 @@ import { unstable_getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import client from "../../../lib/server/client";
 import { Team } from "@prisma/client";
+import { withIronSessionApiRoute } from "iron-session/next";
+import { sessionOptions } from "../users/me";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<any> {
-  const session = await unstable_getServerSession(req, res, authOptions);
+  const NextAuthSession = await unstable_getServerSession(
+    req,
+    res,
+    authOptions
+  );
+  const { session: IronSession } = req;
 
-  if (!session || !session.user) {
+  const userId = NextAuthSession?.user?.id || IronSession?.user?.id;
+
+  if (!userId) {
     return res.status(401).json({
       ok: false,
-      message: "유효하지 않은 세션입니다. 다시 로그인 해주세요.",
+      message: "세션 없음",
     });
   }
-  if (req.method === "GET") {
-    const userId = session.user.id;
 
+  if (req.method === "GET") {
     let team: Team | null;
 
     try {
@@ -45,7 +53,7 @@ export default async function handler(
       });
 
       if (!team) {
-        return res.status(404).json({
+        return res.status(200).json({
           ok: false,
           message: "존재하지 않는 팀입니다.",
         });
@@ -63,8 +71,6 @@ export default async function handler(
       });
     }
   } else if (req.method === "POST") {
-    const userId = session.user.id;
-
     const { name, positions, minTier, maxTier, qType } = req.body;
 
     if (!name) {
@@ -125,6 +131,13 @@ export default async function handler(
   } else if (req.method === "PATCH") {
     const { name, positions, minTier, maxTier, qType, team } = req.body;
 
+    if (team.chiefId !== userId) {
+      return res.status(401).json({
+        ok: false,
+        message: "팀장만 팀 정보를 수정할 수 있습니다.",
+      });
+    }
+
     if (!name) {
       return res.status(400).json({
         ok: false,
@@ -166,9 +179,6 @@ export default async function handler(
     }
   } else if (req.method === "DELETE") {
     const { teamId } = req.body;
-    const {
-      user: { id },
-    } = session;
 
     const team = await client.team.findUnique({
       where: {
@@ -183,7 +193,7 @@ export default async function handler(
       });
     }
 
-    if (team.chiefId !== id) {
+    if (team.chiefId !== userId) {
       return res.status(403).json({
         ok: false,
         message: "권한이 없습니다.",
@@ -215,3 +225,5 @@ export default async function handler(
     });
   }
 }
+
+export default withIronSessionApiRoute(handler, sessionOptions);
