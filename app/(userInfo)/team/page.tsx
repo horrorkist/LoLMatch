@@ -12,6 +12,7 @@ import Button from "../../components/Button";
 import CreateTeamModal from "../../components/CreateTeamModal";
 import { Team, User } from "@prisma/client";
 import { useForm } from "react-hook-form";
+import RegisterTeamModal from "../../components/RegisterTeamModal";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
@@ -29,6 +30,7 @@ interface TeamResponse {
 export default function TeamInfo() {
   const session = useSession();
   const [inEditModal, setInEditModal] = useState(false);
+  const [inRegisterModal, setInRegisterModal] = useState(false);
   const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
   const [inRequestModal, setInRequestModal] = useState(false);
   const {
@@ -54,6 +56,7 @@ export default function TeamInfo() {
     setInEditModal(false);
     setInRequestModal(false);
     setInCreateTeamModal(false);
+    setInRegisterModal(false);
   };
 
   const onDeleteClick = () => {
@@ -159,6 +162,11 @@ export default function TeamInfo() {
           <TeamEditModal team={data?.team!} closeModal={closeModal} />
         </Overlay>
       )}
+      {inRegisterModal && (
+        <Overlay closeModal={closeModal}>
+          <RegisterTeamModal team={data?.team!} closeModal={closeModal} />
+        </Overlay>
+      )}
       <div className="flex flex-col w-2/3 min-w-[800px] px-12 py-8 space-y-4 bg-blue-300">
         <h1 className="flex items-center justify-start w-full text-3xl text-white">
           <p>{data?.team?.name}</p>
@@ -169,6 +177,12 @@ export default function TeamInfo() {
                 onClick={() => setInEditModal(true)}
               >
                 팀 정보 수정
+              </Button>
+              <Button
+                className="ml-4 text-sm"
+                onClick={() => setInRegisterModal(true)}
+              >
+                모집 글 등록
               </Button>
               <Button
                 onClick={onDeleteClick}

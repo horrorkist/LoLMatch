@@ -96,7 +96,7 @@ export default function TeamEditModal({
       )}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col justify-between flex-1 p-4 space-y-6"
+        className="flex flex-col justify-between flex-1 p-8 space-y-6"
       >
         <ul className="flex flex-col space-y-4 justify-evenly">
           <li className="flex items-center space-x-4">
@@ -145,7 +145,7 @@ export default function TeamEditModal({
             type={"submit"}
             className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
           >
-            신청
+            수정
           </button>
         </div>
       </form>

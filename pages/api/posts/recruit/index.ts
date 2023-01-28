@@ -1,717 +1,180 @@
+import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { IFilterParams, Post } from "../../../../app/page";
+import { sessionOptions } from "../../users/me";
+import client from "../../../../lib/server/client";
+import { authOptions } from "../../auth/[...nextauth]";
+import { unstable_getServerSession } from "next-auth";
 
-// const posts: Post[] = [
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 1,
-//     title: "title1",
-//     content: "content1",
-//     positions: [1, 2, 3],
-//     qType: 0,
-//     minTier: 0,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 2,
-//     title: "title2",
-//     content: "content2",
-//     positions: [1, 2],
-//     qType: 1,
-//     minTier: 5,
-//     maxTier: 8,
-//   },
-//   {
-//     id: 3,
-//     title: "title3",
-//     content: "content3",
-//     positions: [1, 3],
-//     qType: 2,
-//     minTier: 4,
-//     maxTier: 9,
-//   },
-//   {
-//     id: 4,
-//     title: "title4",
-//     content: "content4",
-//     positions: [2, 3],
-//     qType: 3,
-//     minTier: 2,
-//     maxTier: 8,
-//   },
-// ];
-
-const p: Post[] = [];
-
-function generatePosts() {
-  for (let i = 0; i < 100; i++) {
-    const positions = [];
-    for (let j = 0; j < 3; j++) {
-      positions.push(Math.floor(Math.random() * 3) + 1);
-    }
-    const qType = Math.floor(Math.random() * 5);
-    const minTier = Math.floor(Math.random() * 10);
-    const maxTier = Math.floor(Math.random() * 10);
-    p.push({
-      id: i,
-      title: `title${i}`,
-      content: `#${i}`,
-      positions,
-      qType,
-      minTier,
-      maxTier,
-    });
-  }
-}
-
-generatePosts();
-
-function getMatchedPosts(
-  posts: Post[][] | Post[],
-  filterParams: IFilterParams
-) {
-  const { qType, positions } = filterParams;
-  let { minTier, maxTier } = filterParams;
-  if (minTier > maxTier) [minTier, maxTier] = [maxTier, minTier];
-
-  const flattened = posts.flat();
-
-  let filteredPosts = flattened.filter((post) => {
-    return post.qType === qType;
-  });
-  filteredPosts = filteredPosts.filter((post) => {
-    return (
-      positions.includes(0) ||
-      post.positions.some((position) => positions.includes(position))
-    );
-  });
-  // filteredPosts = filteredPosts.filter((post) => {
-  //   return post.minTier >= minTier && post.maxTier <= maxTier;
-  // });
-
-  return filteredPosts;
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { page, limit, filter } = req.query;
     const parsedFilter = JSON.parse(filter as string);
-    const filtered = getMatchedPosts(p, parsedFilter);
-    const modified = filtered.slice(
-      Number(page) * Number(limit),
-      (Number(page) + 1) * Number(limit)
+    const { qType, positions, minTier, maxTier } = parsedFilter;
+
+    try {
+      if (positions.some((position: number) => position === 0)) {
+        const recruitPosts = await client.recruitPost.findMany({
+          orderBy: {
+            createdAt: "desc",
+          },
+          where: {
+            team: {
+              qType: qType + "",
+              minTier: {
+                lte: minTier,
+              },
+              maxTier: {
+                gte: maxTier,
+              },
+            },
+          },
+          include: {
+            team: {
+              select: {
+                positions: true,
+                minTier: true,
+                maxTier: true,
+                name: true,
+                users: {
+                  select: {
+                    id: true,
+                    summonerName: true,
+                  },
+                },
+                chiefId: true,
+              },
+            },
+          },
+          skip: Number(page) * Number(limit),
+          take: Number(limit),
+        });
+        return res.status(200).json(recruitPosts);
+      } else {
+        const recruitPosts = await client.recruitPost.findMany({
+          orderBy: {
+            createdAt: "desc",
+          },
+          where: {
+            team: {
+              OR: [
+                {
+                  positions: {
+                    equals: "[0]",
+                  },
+                },
+                {
+                  positions: {
+                    contains: positions[0] + "",
+                  },
+                },
+                {
+                  positions: {
+                    contains: positions[1] + "",
+                  },
+                },
+                {
+                  positions: {
+                    contains: positions[2] + "",
+                  },
+                },
+                {
+                  positions: {
+                    contains: positions[3] + "",
+                  },
+                },
+                {
+                  positions: {
+                    contains: positions[4] + "",
+                  },
+                },
+              ],
+              qType: qType + "",
+              minTier: {
+                lte: minTier,
+              },
+              maxTier: {
+                gte: maxTier,
+              },
+            },
+          },
+          include: {
+            team: {
+              select: {
+                positions: true,
+                minTier: true,
+                maxTier: true,
+                name: true,
+                users: {
+                  select: {
+                    id: true,
+                    summonerName: true,
+                  },
+                },
+                chiefId: true,
+              },
+            },
+          },
+          skip: Number(page) * Number(limit),
+          take: Number(limit),
+        });
+        return res.status(200).json(recruitPosts);
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        ok: false,
+        message: "서버 에러",
+      });
+    }
+  } else if (req.method === "POST") {
+    const NextAuthSession = await unstable_getServerSession(
+      req,
+      res,
+      authOptions
     );
-    return res.status(200).json(modified);
+
+    if (!NextAuthSession) {
+      return res.status(401).json({ ok: false, message: "Not authenticated" });
+    }
+
+    const { teamId, chiefId } = req.body;
+
+    if (NextAuthSession.user.id !== chiefId) {
+      return res.status(401).json({ ok: false, message: "Not authenticated" });
+    }
+
+    if (!teamId) {
+      return res.status(400).json({
+        ok: false,
+        message: "팀 아이디가 없습니다.",
+      });
+    }
+    try {
+      const recruitPost = await client.recruitPost.upsert({
+        where: {
+          teamId,
+        },
+        update: {
+          teamId,
+          createdAt: new Date(),
+        },
+        create: {
+          teamId,
+        },
+      });
+
+      return res.status(200).json({
+        ok: true,
+        recruitPost,
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        ok: false,
+        message: "서버 에러",
+      });
+    }
   }
 }
+
+export default withIronSessionApiRoute(handler, sessionOptions);

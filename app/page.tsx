@@ -16,21 +16,20 @@ import PostTypeButtons from "./components/PostTypeButtons";
 import QTypeSelect from "./components/QTypeSelect";
 import RecruitPostModal from "./components/RecruitPostModal";
 import TierRangeSelect from "./components/TierRangeSelect";
-import useSWR from "swr";
+import useSWR, { preload } from "swr";
 import Link from "next/link";
 import Overlay from "./components/Overlay";
 import CreateTeamModal from "./components/CreateTeamModal";
 import { PostType } from "../lib/client/types";
-import RegisterModal from "./components/RegisterModal";
+import RegisterProfileModal from "./components/RegisterProfileModal";
+import { Team } from "@prisma/client";
+import RecruitPost from "./components/RecruitPost";
+import { AnimatePresence } from "framer-motion";
+import JoinPost from "./components/JoinPost";
 
-export interface Post {
-  id: number;
-  title: string;
-  content: string;
-  positions: number[];
-  minTier: number;
-  maxTier: number;
-  qType: number;
+export interface PostResponse {
+  recruitPosts?: any;
+  joinPosts?: any;
 }
 
 export interface IFilterParams {
@@ -40,10 +39,16 @@ export interface IFilterParams {
   positions: number[];
 }
 
+interface TeamResponse {
+  ok: boolean;
+  team?: Team;
+  message?: string;
+}
+
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 const PostTypeObj = ["recruit", "join"];
 
-const limit = 10;
+const limit = 5;
 
 const initialFilterParams: IFilterParams = {
   qType: 0,
@@ -52,26 +57,47 @@ const initialFilterParams: IFilterParams = {
   positions: [0],
 };
 
+const preloadFetcher = (url: string) => fetch(url).then((res) => res.json());
+
+preload(
+  `/api/posts/recruit?page=0&limit=${limit}&filter={"qType":0,"minTier":0,"maxTier":9,"positions":[0]}`,
+  preloadFetcher
+);
+
 function Home() {
   // post 관련
-  const [postType, setPostType] = useState(PostType.JOIN);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [postType, setPostType] = useState(PostType.RECRUIT);
+  const [posts, setPosts] = useState([]);
   const [filterParams, setFilterParams] =
     useState<IFilterParams>(initialFilterParams);
 
   // swr 관련
-  const getKey = (pageIndex: number, previousPageData: Post[]) => {
+  const getKey = (pageIndex: number, previousPageData: any) => {
     if (previousPageData && !previousPageData.length) return null;
     return `/api/posts/${
       PostTypeObj[postType]
     }?page=${pageIndex}&limit=${limit}&filter=${JSON.stringify(filterParams)}`;
   };
 
-  const { isLoading, data, setSize } = useSWRInfinite(getKey);
+  const { isLoading, data, setSize, isValidating } = useSWRInfinite(
+    getKey,
+    (url) => fetch(url).then((res) => res.json()),
+    {
+      // refreshInterval: 10000,
+      revalidateAll: true,
+      dedupingInterval: 0,
+      revalidateOnFocus: false,
+      refreshInterval: 10000,
+      initialSize: 3,
+      onSuccess(data, key, config) {
+        console.log(data);
+      },
+    }
+  );
 
   // session
   const session = useSession();
-  const { data: teamData } = useSWR("/api/team");
+  const { data: teamData } = useSWR<TeamResponse>("/api/team");
 
   //   `/api/posts/${postType === PostType.RECRUIT ? "recruit" : "join"}?page=${
   //     page.current
@@ -84,7 +110,8 @@ function Home() {
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
   ) => {
-    setSize(1);
+    if (isLoading) return;
+    setSize(0);
 
     const position = Number(e.currentTarget.dataset.position);
     const prevPositions = filterParams.positions;
@@ -107,7 +134,8 @@ function Home() {
   };
 
   const handleQTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSize(1);
+    if (isLoading) return;
+    setSize(0);
     const qType = Number(e.currentTarget.value);
     setFilterParams((prev) => ({
       ...prev,
@@ -118,7 +146,8 @@ function Home() {
   const handleTierChange: ChangeEventHandler = (
     e: ChangeEvent<HTMLInputElement>
   ) => {
-    setSize(1);
+    if (isLoading) return;
+    setSize(0);
     const { name, value } = e.currentTarget;
     setFilterParams((prev) => ({
       ...prev,
@@ -127,13 +156,15 @@ function Home() {
   };
 
   const handleRecruitChange = (e: MouseEvent<HTMLButtonElement>) => {
-    setSize(1);
+    if (isValidating || isLoading) return;
     const newPostType = Number(e.currentTarget.dataset.post_type);
     if (postType === newPostType) return;
     setPostType(newPostType);
+    setSize(0);
   };
 
   const handleLoadMore = (e: MouseEvent<HTMLDivElement>) => {
+    if (isLoading) return;
     setSize((prev) => prev + 1);
   };
 
@@ -150,25 +181,25 @@ function Home() {
   };
 
   const handleRegister = () => {
-    setInRegisterModal(true);
+    setInRegisterProfileModal(true);
   };
 
   // 데이터 로드
-  useEffect(() => {
-    if (!isLoading && data) {
-      setPosts(data);
-    }
-  }, [isLoading, data]);
+  // useEffect(() => {
+  //   if (!isLoading && data) {
+  //     console.log(data.flat());
+  //   }
+  // }, [isLoading, data]);
 
   // Modal 관련
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
-  const [inRegisterModal, setInRegisterModal] = useState(false);
+  const [inRegisterProfileModal, setInRegisterProfileModal] = useState(false);
 
   const closeModal = () => {
     setIsPostModalOpen(false);
     setInCreateTeamModal(false);
-    setInRegisterModal(false);
+    setInRegisterProfileModal(false);
   };
 
   // useEffect(() => {
@@ -210,9 +241,9 @@ function Home() {
           <CreateTeamModal closeModal={closeModal} />
         </Overlay>
       )}
-      {inRegisterModal && (
+      {inRegisterProfileModal && (
         <Overlay closeModal={closeModal}>
-          <RegisterModal closeModal={closeModal} />
+          <RegisterProfileModal closeModal={closeModal} />
         </Overlay>
       )}
       <main
@@ -259,25 +290,39 @@ function Home() {
           </li>
         </ul>
         <div className="flex flex-col space-y-1">
-          {posts?.flat().map((post, index) => (
-            <div
-              key={index}
-              onClick={handleClickPost} // delegation
-              className="w-full p-4 cursor-pointer odd:bg-sky-500 even:bg-blue-300"
-            >
-              {post.content}
-              원하는 포지션 :
-              {post.positions
-                .map((position) => PositionObj[position])
-                .join(", ")}
-            </div>
-          ))}
+          {postType === PostType.RECRUIT
+            ? data
+                ?.flat()
+                .map((post) => (
+                  <RecruitPost
+                    key={post.id}
+                    team={post.team}
+                    className="flex items-center justify-around p-4 even:bg-blue-400 odd:bg-blue-300"
+                  />
+                ))
+            : data
+                ?.flat()
+                .map((post) => (
+                  <JoinPost
+                    key={post.id}
+                    user={post.user}
+                    className="flex items-center justify-around p-4 even:bg-blue-400 odd:bg-blue-300"
+                  />
+                ))}
         </div>
+        {isValidating ? (
+          <div className="flex items-center justify-center">
+            <div className="w-10 h-10 border-4 border-gray-300 rounded-full border-x-black border-b-black animate-spin"></div>
+          </div>
+        ) : (
+          <div
+            onClick={handleLoadMore}
+            className="flex items-center justify-center h-12 text-white bg-red-500 rounded-md cursor-pointer hover:opacity-50"
+          >
+            더 보기
+          </div>
+        )}
         {/* <div ref={observeTarget} className="h-12 bg-red-500"></div> */}
-        <div
-          onClick={handleLoadMore}
-          className="h-12 bg-red-500 cursor-pointer hover:opacity-50"
-        />
       </main>
     </div>
   );

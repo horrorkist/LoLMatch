@@ -8,7 +8,7 @@ import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierSelect from "./TierSelect";
 
-interface RegisterModalProps {
+interface RegisterProfileModalProps {
   closeModal: () => void;
 }
 
@@ -24,7 +24,9 @@ interface RegisterResponse {
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
-export default function RegisterModal({ closeModal }: RegisterModalProps) {
+export default function RegisterProfileModal({
+  closeModal,
+}: RegisterProfileModalProps) {
   const {
     register,
     handleSubmit,
@@ -129,7 +131,7 @@ export default function RegisterModal({ closeModal }: RegisterModalProps) {
       )}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col justify-between flex-1 p-4 space-y-6"
+        className="flex flex-col justify-between flex-1 p-8 space-y-6"
       >
         <ul className="flex flex-col space-y-4 justify-evenly">
           <li className="flex items-center space-x-4">

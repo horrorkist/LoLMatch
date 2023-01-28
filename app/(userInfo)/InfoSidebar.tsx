@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const pathArray = [
   { path: "/profile", name: "소환사 정보" },
   { path: "/team", name: "팀 정보" },
+  { path: "/invitations", name: "내게 온 초대" },
 ];
 
 export default function InfoSidebar() {
