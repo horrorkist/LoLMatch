@@ -30,6 +30,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           include: {
             user: {
               select: {
+                id: true,
                 summonerName: true,
                 tier: true,
                 positions: true,
@@ -101,6 +102,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           include: {
             user: {
               select: {
+                id: true,
                 summonerName: true,
                 tier: true,
                 positions: true,

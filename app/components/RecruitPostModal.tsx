@@ -1,10 +1,12 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { Request } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import { UserInfoFormData } from "../(userInfo)/profile/page";
+import { TeamWithMembers } from "../(userInfo)/team/page";
+import useMutation from "../../lib/client/useMutation";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierRangeSelect from "./TierRangeSelect";
@@ -13,12 +15,21 @@ import UserLinkName from "./UserLinkName";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
+interface RecruitPostModalProps {
+  closeModal: () => void;
+  team: TeamWithMembers;
+}
+
+interface JoinRequestResponse {
+  ok: boolean;
+  message?: string;
+  joinRequest?: Request;
+}
+
 export default function RecruitPostModal({
   closeModal,
-}: {
-  closeModal: () => void;
-}) {
-  const session = useSession();
+  team,
+}: RecruitPostModalProps) {
   const { data, isLoading } = useSWR(`/api/users/me`);
   const {
     register,
@@ -31,7 +42,14 @@ export default function RecruitPostModal({
     },
   });
 
+  const [chiefName, setChiefName] = useState<string>("");
+
   const [selectedPosition, setSelectedPosition] = useState<number[]>([]);
+
+  const [mutateUser, { data: userData, loading: userLoading }] =
+    useMutation("/api/users/me");
+  const [mutateRequest, { data: requestData, loading: requestLoading }] =
+    useMutation<JoinRequestResponse>("/api/joinRequests");
 
   const handlePositionSelect = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -45,14 +63,62 @@ export default function RecruitPostModal({
   };
 
   const onSubmit = (data: UserInfoFormData) => {
-    console.log(data);
+    if (userLoading || requestLoading) {
+      alert("잠시만 기다려주세요.");
+      return;
+    }
+
+    if (selectedPosition.length === 0) {
+      alert("포지션을 선택해주세요.");
+      return;
+    }
+
+    if (selectedPosition.length >= 2) {
+      alert("포지션은 1개만 선택해주세요.");
+      return;
+    }
+    mutateUser(
+      {
+        summonerName: data.summonerName,
+        tier: data.tier,
+        positions: selectedPosition,
+      },
+      "POST"
+    );
+    mutateRequest(
+      {
+        teamId: team.id,
+      },
+      "POST"
+    );
   };
+
+  useEffect(() => {
+    team.users.forEach((user) => {
+      if (user.id === team?.chiefId) {
+        setChiefName(user.summonerName || "팀장");
+      }
+    });
+  }, [team]);
 
   useEffect(() => {
     if (!isLoading && data.ok) {
       setSelectedPosition(JSON.parse(data?.user?.positions || "[0]"));
     }
   }, [isLoading, data]);
+
+  useEffect(() => {
+    if (requestData?.ok) {
+      alert("가입 신청이 완료되었습니다.");
+      closeModal();
+      return;
+    }
+
+    if (!requestData?.ok && requestData?.message) {
+      alert(requestData.message);
+      return;
+    }
+  }, [requestData]);
 
   return (
     <div
@@ -65,26 +131,33 @@ export default function RecruitPostModal({
       >
         <div>
           <header className="flex items-center justify-between border-b-2 border-gray-300">
-            <h1 className="p-4">팀 이름</h1>
+            <h1 className="p-4">{team?.name}</h1>
           </header>
           <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
             <div className="flex space-x-4">
               <p>팀장</p>
-              <UserLinkName>달려라불사조</UserLinkName>
+              <UserLinkName>{chiefName}</UserLinkName>
             </div>
             <section>
               <ul className="flex flex-col space-y-4 justify-evenly">
                 <li className="flex flex-col space-y-2">
                   <p className="pl-2">큐 타입</p>
-                  <QTypeSelect disabled />
+                  <QTypeSelect disabled value={team?.qType || "3"} />
                 </li>
                 <li className="flex flex-col space-y-2">
                   <p className="pl-2">모집 포지션</p>
-                  <PositionSelect PositionObj={PositionObj} />
+                  <PositionSelect
+                    positions={JSON.parse(team?.positions || "[0]")}
+                    PositionObj={PositionObj}
+                  />
                 </li>
                 <li className="flex flex-col space-y-2">
                   <p className="pl-2">모집 티어</p>
-                  <TierRangeSelect minTier={4} maxTier={7} disabled />
+                  <TierRangeSelect
+                    minTier={team?.minTier || 0}
+                    maxTier={team?.maxTier || 9}
+                    disabled
+                  />
                 </li>
               </ul>
             </section>

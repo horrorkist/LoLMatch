@@ -21,20 +21,22 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
             team: {
               qType: qType + "",
               minTier: {
-                lte: minTier,
+                gte: minTier,
               },
               maxTier: {
-                gte: maxTier,
+                lte: maxTier,
               },
             },
           },
           include: {
             team: {
               select: {
+                id: true,
                 positions: true,
                 minTier: true,
                 maxTier: true,
                 name: true,
+                qType: true,
                 users: {
                   select: {
                     id: true,
@@ -90,20 +92,22 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               ],
               qType: qType + "",
               minTier: {
-                lte: minTier,
+                gte: minTier,
               },
               maxTier: {
-                gte: maxTier,
+                lte: maxTier,
               },
             },
           },
           include: {
             team: {
               select: {
+                id: true,
                 positions: true,
                 minTier: true,
                 maxTier: true,
                 name: true,
+                qType: true,
                 users: {
                   select: {
                     id: true,

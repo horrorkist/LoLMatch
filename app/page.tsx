@@ -24,8 +24,8 @@ import { PostType } from "../lib/client/types";
 import RegisterProfileModal from "./components/RegisterProfileModal";
 import { Team } from "@prisma/client";
 import RecruitPost from "./components/RecruitPost";
-import { AnimatePresence } from "framer-motion";
 import JoinPost from "./components/JoinPost";
+import { TeamWithMembers } from "./(userInfo)/team/page";
 
 export interface PostResponse {
   recruitPosts?: any;
@@ -45,6 +45,13 @@ interface TeamResponse {
   message?: string;
 }
 
+enum ModalType {
+  JOIN_POST,
+  RECRUIT_POST,
+  CREATE_TEAM,
+  REGISTER_PROFILE,
+}
+
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 const PostTypeObj = ["recruit", "join"];
 
@@ -57,17 +64,16 @@ const initialFilterParams: IFilterParams = {
   positions: [0],
 };
 
-const preloadFetcher = (url: string) => fetch(url).then((res) => res.json());
+// const preloadFetcher = (url: string) => fetch(url).then((res) => res.json());
 
-preload(
-  `/api/posts/recruit?page=0&limit=${limit}&filter={"qType":0,"minTier":0,"maxTier":9,"positions":[0]}`,
-  preloadFetcher
-);
+// preload(
+//   `/api/posts/recruit?page=0&limit=${limit}&filter={"qType":0,"minTier":0,"maxTier":9,"positions":[0]}`,
+//   preloadFetcher
+// );
 
 function Home() {
   // post 관련
-  const [postType, setPostType] = useState(PostType.RECRUIT);
-  const [posts, setPosts] = useState([]);
+  const [postType, setPostType] = useState(PostType.JOIN);
   const [filterParams, setFilterParams] =
     useState<IFilterParams>(initialFilterParams);
 
@@ -99,18 +105,11 @@ function Home() {
   const session = useSession();
   const { data: teamData } = useSWR<TeamResponse>("/api/team");
 
-  //   `/api/posts/${postType === PostType.RECRUIT ? "recruit" : "join"}?page=${
-  //     page.current
-  //   }&limit=${limit}`
-  // );
-  // const io = useRef<IntersectionObserver>();
-  // const observeTarget = useRef<HTMLDivElement>(null);
-
   // 변경 관리 함수
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
   ) => {
-    if (isLoading) return;
+    if (isLoading || isValidating) return;
     setSize(0);
 
     const position = Number(e.currentTarget.dataset.position);
@@ -134,7 +133,7 @@ function Home() {
   };
 
   const handleQTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    if (isLoading) return;
+    if (isLoading || isValidating) return;
     setSize(0);
     const qType = Number(e.currentTarget.value);
     setFilterParams((prev) => ({
@@ -146,7 +145,7 @@ function Home() {
   const handleTierChange: ChangeEventHandler = (
     e: ChangeEvent<HTMLInputElement>
   ) => {
-    if (isLoading) return;
+    if (isLoading || isValidating) return;
     setSize(0);
     const { name, value } = e.currentTarget;
     setFilterParams((prev) => ({
@@ -163,13 +162,20 @@ function Home() {
     setSize(0);
   };
 
-  const handleLoadMore = (e: MouseEvent<HTMLDivElement>) => {
-    if (isLoading) return;
+  const handleLoadMore = () => {
+    if (isLoading || isValidating) return;
     setSize((prev) => prev + 1);
   };
 
-  const handleClickPost = (e: MouseEvent<HTMLDivElement>) => {
-    if (postType === PostType.RECRUIT) setIsPostModalOpen(true);
+  const handleClickRecruitPost = (team: TeamWithMembers) => {
+    setRecruitTeam(team);
+    setInModal(true);
+    setModalType(ModalType.RECRUIT_POST);
+  };
+
+  const handleClickJoinPost = () => {
+    setInModal(true);
+    setModalType(ModalType.JOIN_POST);
   };
 
   const handleCreateTeam = () => {
@@ -177,11 +183,13 @@ function Home() {
       alert("로그인이 필요합니다.");
       return;
     }
-    setInCreateTeamModal(true);
+    setInModal(true);
+    setModalType(ModalType.CREATE_TEAM);
   };
 
   const handleRegister = () => {
-    setInRegisterProfileModal(true);
+    setInModal(true);
+    setModalType(ModalType.REGISTER_PROFILE);
   };
 
   // 데이터 로드
@@ -192,58 +200,40 @@ function Home() {
   // }, [isLoading, data]);
 
   // Modal 관련
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
-  const [inRegisterProfileModal, setInRegisterProfileModal] = useState(false);
+  const [inModal, setInModal] = useState(false);
+  const [modalType, setModalType] = useState<ModalType>();
+  const [recruitTeam, setRecruitTeam] = useState<TeamWithMembers>();
 
   const closeModal = () => {
-    setIsPostModalOpen(false);
-    setInCreateTeamModal(false);
-    setInRegisterProfileModal(false);
+    setInModal(false);
   };
 
-  // useEffect(() => {
-  //   if (!observeTarget.current) return;
-  //   io.current = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting && size < 10) {
-  //         setSize((prev) => prev + 1);
-  //       }
-  //     },
-  //     {
-  //       threshold: 0,
-  //     }
-  //   );
-  // });
-
-  // useEffect(() => {
-  //   if (!observeTarget.current) return;
-  //   if (!isLoading) {
-  //     io.current?.observe(observeTarget.current);
-  //   } else {
-  //     io.current?.disconnect();
-  //   }
-  // }, [isLoading]);
-
   useEffect(() => {
-    if (isPostModalOpen || inCreateTeamModal) {
+    if (inModal) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-  }, [isPostModalOpen, inCreateTeamModal]);
+  }, [inModal]);
 
   return (
     <div className={`relative p-4`}>
-      {isPostModalOpen && <RecruitPostModal closeModal={closeModal} />}
-      {inCreateTeamModal && (
+      {inModal && modalType === ModalType.RECRUIT_POST && (
+        <RecruitPostModal team={recruitTeam!} closeModal={closeModal} />
+      )}
+      {inModal && modalType === ModalType.CREATE_TEAM && (
         <Overlay closeModal={closeModal}>
           <CreateTeamModal closeModal={closeModal} />
         </Overlay>
       )}
-      {inRegisterProfileModal && (
+      {inModal && modalType === ModalType.REGISTER_PROFILE && (
         <Overlay closeModal={closeModal}>
           <RegisterProfileModal closeModal={closeModal} />
+        </Overlay>
+      )}
+      {inModal && modalType === ModalType.JOIN_POST && (
+        <Overlay closeModal={closeModal}>
+          <div>Join Post Modal</div>
         </Overlay>
       )}
       <main
@@ -295,18 +285,20 @@ function Home() {
                 ?.flat()
                 .map((post) => (
                   <RecruitPost
+                    onClick={() => handleClickRecruitPost(post.team)}
                     key={post.id}
                     team={post.team}
-                    className="flex items-center justify-around p-4 even:bg-blue-400 odd:bg-blue-300"
+                    className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
                   />
                 ))
             : data
                 ?.flat()
                 .map((post) => (
                   <JoinPost
+                    onClick={handleClickJoinPost}
                     key={post.id}
                     user={post.user}
-                    className="flex items-center justify-around p-4 even:bg-blue-400 odd:bg-blue-300"
+                    className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
                   />
                 ))}
         </div>
@@ -322,7 +314,6 @@ function Home() {
             더 보기
           </div>
         )}
-        {/* <div ref={observeTarget} className="h-12 bg-red-500"></div> */}
       </main>
     </div>
   );

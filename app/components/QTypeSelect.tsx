@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { UseFormRegister } from "react-hook-form";
 
 interface QTypeSelectProps {
@@ -11,7 +12,7 @@ export default function QTypeSelect({
   handleQTypeChange,
   register,
   disabled,
-  rest,
+  ...rest
 }: QTypeSelectProps) {
   return (
     <div>

@@ -12,7 +12,7 @@ export default function RecruitPost({
   onClick,
   team,
   className,
-  rest,
+  ...rest
 }: RecruitPostProps) {
   return (
     <motion.li

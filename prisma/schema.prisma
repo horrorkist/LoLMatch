@@ -91,6 +91,9 @@ model Request {
   receivedTeam Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   rejected     Boolean  @default(false)
   createdAt    DateTime @default(now())
+  position     String?
+  tier         Int?
+  summonerName String?
 
   @@index([userId])
   @@index([teamId])
