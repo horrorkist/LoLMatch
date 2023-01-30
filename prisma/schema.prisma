@@ -107,6 +107,7 @@ model Invitation {
   receivedUser User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rejected     Boolean  @default(false)
   createdAt    DateTime @default(now())
+  position     Int
 
   @@index([userId])
   @@index([teamId])

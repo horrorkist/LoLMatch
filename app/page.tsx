@@ -22,10 +22,11 @@ import Overlay from "./components/Overlay";
 import CreateTeamModal from "./components/CreateTeamModal";
 import { PostType } from "../lib/client/types";
 import RegisterProfileModal from "./components/RegisterProfileModal";
-import { Team } from "@prisma/client";
+import { JoinPost, Team, User } from "@prisma/client";
 import RecruitPost from "./components/RecruitPost";
-import JoinPost from "./components/JoinPost";
+import JoinPostComponent from "./components/JoinPost";
 import { TeamWithMembers } from "./(userInfo)/team/page";
+import JoinPostModal from "./components/JoinPostModal";
 
 export interface PostResponse {
   recruitPosts?: any;
@@ -37,6 +38,10 @@ export interface IFilterParams {
   minTier: number;
   maxTier: number;
   positions: number[];
+}
+
+export interface JoinPostWithUser extends JoinPost {
+  user: User;
 }
 
 interface TeamResponse {
@@ -173,7 +178,8 @@ function Home() {
     setModalType(ModalType.RECRUIT_POST);
   };
 
-  const handleClickJoinPost = () => {
+  const handleClickJoinPost = (post: JoinPostWithUser) => {
+    setClickedJoinPost(post);
     setInModal(true);
     setModalType(ModalType.JOIN_POST);
   };
@@ -203,6 +209,7 @@ function Home() {
   const [inModal, setInModal] = useState(false);
   const [modalType, setModalType] = useState<ModalType>();
   const [recruitTeam, setRecruitTeam] = useState<TeamWithMembers>();
+  const [clickedJoinPost, setClickedJoinPost] = useState<JoinPostWithUser>();
 
   const closeModal = () => {
     setInModal(false);
@@ -218,8 +225,8 @@ function Home() {
 
   return (
     <div className={`relative p-4`}>
-      {inModal && modalType === ModalType.RECRUIT_POST && (
-        <RecruitPostModal team={recruitTeam!} closeModal={closeModal} />
+      {inModal && modalType === ModalType.RECRUIT_POST && recruitTeam && (
+        <RecruitPostModal team={recruitTeam} closeModal={closeModal} />
       )}
       {inModal && modalType === ModalType.CREATE_TEAM && (
         <Overlay closeModal={closeModal}>
@@ -231,9 +238,9 @@ function Home() {
           <RegisterProfileModal closeModal={closeModal} />
         </Overlay>
       )}
-      {inModal && modalType === ModalType.JOIN_POST && (
+      {inModal && modalType === ModalType.JOIN_POST && clickedJoinPost && (
         <Overlay closeModal={closeModal}>
-          <div>Join Post Modal</div>
+          <JoinPostModal closeModal={closeModal} post={clickedJoinPost} />
         </Overlay>
       )}
       <main
@@ -294,8 +301,8 @@ function Home() {
             : data
                 ?.flat()
                 .map((post) => (
-                  <JoinPost
-                    onClick={handleClickJoinPost}
+                  <JoinPostComponent
+                    onClick={() => handleClickJoinPost(post)}
                     key={post.id}
                     user={post.user}
                     className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"

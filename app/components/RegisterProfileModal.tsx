@@ -1,9 +1,7 @@
 "use client";
 
-import { JoinPost } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import useMutation from "../../lib/client/useMutation";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierSelect from "./TierSelect";
