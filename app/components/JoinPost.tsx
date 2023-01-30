@@ -18,7 +18,7 @@ export default function JoinPost({
     <motion.li
       onClick={onClick}
       className={className}
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
       {...rest}
     >

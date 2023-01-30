@@ -13,6 +13,7 @@ import CreateTeamModal from "../../components/CreateTeamModal";
 import { Team, User } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import RegisterTeamModal from "../../components/RegisterTeamModal";
+import { AnimatePresence } from "framer-motion";
 
 const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 
@@ -144,29 +145,33 @@ export default function TeamInfo() {
   ) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 space-y-4">
-        {inCreateTeamModal && (
-          <Overlay closeModal={closeModal}>
-            <CreateTeamModal closeModal={closeModal} />
-          </Overlay>
-        )}
-        <h1 className="text-2xl">아직 팀이 없으시네요!</h1>
-        <Button onClick={onCreateClick}>팀 만들기</Button>
+        <AnimatePresence>
+          {inCreateTeamModal && (
+            <Overlay closeModal={closeModal}>
+              <CreateTeamModal closeModal={closeModal} />
+            </Overlay>
+          )}
+          <h1 className="text-2xl">아직 팀이 없으시네요!</h1>
+          <Button onClick={onCreateClick}>팀 만들기</Button>
+        </AnimatePresence>
       </div>
     );
   }
 
   return (
     <div className="flex flex-1">
-      {inEditModal && (
-        <Overlay closeModal={closeModal}>
-          <TeamEditModal team={data?.team!} closeModal={closeModal} />
-        </Overlay>
-      )}
-      {inRegisterModal && (
-        <Overlay closeModal={closeModal}>
-          <RegisterTeamModal team={data?.team!} closeModal={closeModal} />
-        </Overlay>
-      )}
+      <AnimatePresence>
+        {inEditModal && (
+          <Overlay closeModal={closeModal}>
+            <TeamEditModal team={data?.team!} closeModal={closeModal} />
+          </Overlay>
+        )}
+        {inRegisterModal && (
+          <Overlay closeModal={closeModal}>
+            <RegisterTeamModal team={data?.team!} closeModal={closeModal} />
+          </Overlay>
+        )}
+      </AnimatePresence>
       <div className="flex flex-col w-2/3 min-w-[800px] px-12 py-8 space-y-4 bg-blue-300">
         <h1 className="flex items-center justify-start w-full text-3xl text-white">
           <p>{data?.team?.name}</p>
@@ -202,7 +207,7 @@ export default function TeamInfo() {
         </h1>
         <div className="flex-1">
           <section className="flex flex-col w-full h-full overflow-hidden bg-white rounded-md">
-            <header className="flex p-4 border-b border-black justify-evenly">
+            <header className="flex p-4 space-x-8 border-b border-black">
               <div className="flex flex-col space-y-2">
                 <p className="pl-2">큐 타입</p>
                 <QTypeSelect

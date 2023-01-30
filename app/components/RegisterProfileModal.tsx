@@ -2,6 +2,7 @@
 
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierSelect from "./TierSelect";
@@ -113,10 +114,11 @@ export default function RegisterProfileModal({
   }, [error]);
 
   return (
-    <div
-      className="relative text-gray-300 rounded-md bg-slate-500"
-      onClick={(e) => e.stopPropagation()}
-    >
+    // <div
+    //   className="relative text-gray-300 rounded-md bg-slate-500"
+    //   onClick={(e) => e.stopPropagation()}
+    // >
+    <ModalWrapper className="relative">
       {errors.name?.type === "required" && (
         <p className="absolute left-0 right-0 p-4 text-white bg-red-500 rounded-md -top-24 text-xm">
           {String(errors.name?.message)}
@@ -178,6 +180,6 @@ export default function RegisterProfileModal({
           </button>
         </div>
       </form>
-    </div>
+    </ModalWrapper>
   );
 }

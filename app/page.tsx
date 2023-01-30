@@ -27,6 +27,7 @@ import RecruitPost from "./components/RecruitPost";
 import JoinPostComponent from "./components/JoinPost";
 import { TeamWithMembers } from "./(userInfo)/team/page";
 import JoinPostModal from "./components/JoinPostModal";
+import { AnimatePresence } from "framer-motion";
 
 export interface PostResponse {
   recruitPosts?: any;
@@ -78,7 +79,7 @@ const initialFilterParams: IFilterParams = {
 
 function Home() {
   // post 관련
-  const [postType, setPostType] = useState(PostType.JOIN);
+  const [postType, setPostType] = useState(PostType.RECRUIT);
   const [filterParams, setFilterParams] =
     useState<IFilterParams>(initialFilterParams);
 
@@ -98,7 +99,7 @@ function Home() {
       revalidateAll: true,
       dedupingInterval: 0,
       revalidateOnFocus: false,
-      refreshInterval: 10000,
+      refreshInterval: 1000 * 20,
       initialSize: 3,
       onSuccess(data, key, config) {
         console.log(data);
@@ -225,24 +226,28 @@ function Home() {
 
   return (
     <div className={`relative p-4`}>
-      {inModal && modalType === ModalType.RECRUIT_POST && recruitTeam && (
-        <RecruitPostModal team={recruitTeam} closeModal={closeModal} />
-      )}
-      {inModal && modalType === ModalType.CREATE_TEAM && (
-        <Overlay closeModal={closeModal}>
-          <CreateTeamModal closeModal={closeModal} />
-        </Overlay>
-      )}
-      {inModal && modalType === ModalType.REGISTER_PROFILE && (
-        <Overlay closeModal={closeModal}>
-          <RegisterProfileModal closeModal={closeModal} />
-        </Overlay>
-      )}
-      {inModal && modalType === ModalType.JOIN_POST && clickedJoinPost && (
-        <Overlay closeModal={closeModal}>
-          <JoinPostModal closeModal={closeModal} post={clickedJoinPost} />
-        </Overlay>
-      )}
+      <AnimatePresence>
+        {inModal && modalType === ModalType.RECRUIT_POST && recruitTeam && (
+          <Overlay closeModal={closeModal}>
+            <RecruitPostModal team={recruitTeam} closeModal={closeModal} />
+          </Overlay>
+        )}
+        {inModal && modalType === ModalType.CREATE_TEAM && (
+          <Overlay closeModal={closeModal}>
+            <CreateTeamModal closeModal={closeModal} />
+          </Overlay>
+        )}
+        {inModal && modalType === ModalType.REGISTER_PROFILE && (
+          <Overlay closeModal={closeModal}>
+            <RegisterProfileModal closeModal={closeModal} />
+          </Overlay>
+        )}
+        {inModal && modalType === ModalType.JOIN_POST && clickedJoinPost && (
+          <Overlay closeModal={closeModal}>
+            <JoinPostModal closeModal={closeModal} post={clickedJoinPost} />
+          </Overlay>
+        )}
+      </AnimatePresence>
       <main
         className={`flex flex-col w-[900px] justify-center m-auto space-y-4 `}
       >
@@ -298,16 +303,20 @@ function Home() {
                     className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
                   />
                 ))
-            : data
-                ?.flat()
-                .map((post) => (
-                  <JoinPostComponent
-                    onClick={() => handleClickJoinPost(post)}
-                    key={post.id}
-                    user={post.user}
-                    className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
-                  />
-                ))}
+            : data?.flat().map((post) => (
+                <JoinPostComponent
+                  onClick={() => {
+                    if (teamData?.ok) {
+                      handleClickJoinPost(post);
+                    } else {
+                      alert("먼저 팀을 만들어주세요.");
+                    }
+                  }}
+                  key={post.id}
+                  user={post.user}
+                  className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
+                />
+              ))}
         </div>
         {isValidating ? (
           <div className="flex items-center justify-center">

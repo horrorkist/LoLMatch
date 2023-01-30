@@ -43,12 +43,19 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         .json({ ok: false, message: "먼저 로그인을 하고, 팀을 만들어주세요." });
     }
 
-    const { invitedId } = req.body;
+    const { invitedId, invitingPosition } = req.body;
 
     if (!invitedId) {
       return res.status(400).json({
         ok: false,
         message: "초대하려는 유저의 정보가 존재하지 않습니다.",
+      });
+    }
+
+    if (!invitingPosition) {
+      return res.status(400).json({
+        ok: false,
+        message: "포지션을 선택해주세요.",
       });
     }
 
@@ -114,8 +121,38 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     try {
+      const existingInvitation = await client.invitation.findFirst({
+        where: {
+          sentTeam: {
+            id: invitingUser.team.id,
+          },
+          receivedUser: {
+            id: invitedId,
+          },
+        },
+      });
+
+      if (
+        Number(new Date()) - Number(existingInvitation?.createdAt) <
+        1000 * 60
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message: "초대는 1분에 한 번만 할 수 있습니다.",
+        });
+      }
+
+      if (existingInvitation) {
+        await client.invitation.delete({
+          where: {
+            id: existingInvitation?.id,
+          },
+        });
+      }
+
       const invitation = await client.invitation.create({
         data: {
+          position: invitingPosition,
           sentTeam: {
             connect: {
               id: invitingUser.team.id,

@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { UserInfoFormData } from "../(userInfo)/profile/page";
 import { TeamWithMembers } from "../(userInfo)/team/page";
 import useMutation from "../../lib/client/useMutation";
+import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierRangeSelect from "./TierRangeSelect";
@@ -121,114 +122,106 @@ export default function RecruitPostModal({
   }, [requestData]);
 
   return (
-    <div
-      onClick={closeModal}
-      className="fixed top-0 bottom-0 left-0 right-0 z-20 flex items-center justify-center w-screen h-screen bg-black bg-opacity-50 overlay"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="flex text-gray-300 border-blue-500 divide-gray-300 rounded-md select-none divide-x-1 min-w-min bg-slate-500 modal"
-      >
-        <div>
-          <header className="flex items-center justify-between border-b-2 border-gray-300">
-            <h1 className="p-4">{team?.name}</h1>
-          </header>
-          <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
-            <div className="flex space-x-4">
-              <p>팀장</p>
-              <UserLinkName>{chiefName}</UserLinkName>
+    <ModalWrapper className="divide-gray-300 divide-x-1">
+      <div>
+        <header className="flex items-center justify-between border-b-2 border-gray-300">
+          <h1 className="p-4">{team?.name}</h1>
+        </header>
+        <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
+          <div className="flex space-x-4">
+            <p>팀장</p>
+            <UserLinkName>{chiefName}</UserLinkName>
+          </div>
+          <section>
+            <ul className="flex flex-col space-y-4 justify-evenly">
+              <li className="flex flex-col space-y-2">
+                <p className="pl-2">큐 타입</p>
+                <QTypeSelect disabled value={team?.qType} />
+              </li>
+              <li className="flex flex-col space-y-2">
+                <p className="pl-2">모집 포지션</p>
+                <PositionSelect
+                  positions={JSON.parse(team?.positions || "[0]")}
+                  PositionObj={PositionObj}
+                />
+              </li>
+              <li className="flex flex-col space-y-2">
+                <p className="pl-2">모집 티어</p>
+                <TierRangeSelect
+                  minTier={team?.minTier || 0}
+                  maxTier={team?.maxTier || 9}
+                  disabled
+                />
+              </li>
+            </ul>
+          </section>
+        </main>
+      </div>
+      <div className="flex flex-col">
+        <header className="flex items-center justify-between border-b-2 border-gray-300">
+          <h1 className="p-4">내 정보</h1>
+          <button onClick={closeModal} className="p-4">
+            X
+          </button>
+        </header>
+        <form onSubmit={handleSubmit(onSubmit)} action="" className="flex-1">
+          <main className="flex flex-col justify-between h-full p-4 space-y-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
+                <p className="pl-2">소환사 명</p>
+                {errors.summonerName?.type === "required" && (
+                  <p className="text-sm text-red-700">
+                    {errors.summonerName.message}
+                  </p>
+                )}
+                {errors.summonerName?.type === "maxLength" && (
+                  <p className="text-sm text-red-700">
+                    소환사 명은 20자 이내로 입력해주세요.
+                  </p>
+                )}
+              </div>
+              <input
+                {...register("summonerName", {
+                  required: "소환사 명을 입력해주세요.",
+                  maxLength: 20,
+                })}
+                type="text"
+                className="w-48 p-2 pl-4 text-black rounded-md focus:outline-none"
+              />
             </div>
-            <section>
-              <ul className="flex flex-col space-y-4 justify-evenly">
-                <li className="flex flex-col space-y-2">
-                  <p className="pl-2">큐 타입</p>
-                  <QTypeSelect disabled value={team?.qType || "3"} />
-                </li>
-                <li className="flex flex-col space-y-2">
-                  <p className="pl-2">모집 포지션</p>
-                  <PositionSelect
-                    positions={JSON.parse(team?.positions || "[0]")}
-                    PositionObj={PositionObj}
-                  />
-                </li>
-                <li className="flex flex-col space-y-2">
-                  <p className="pl-2">모집 티어</p>
-                  <TierRangeSelect
-                    minTier={team?.minTier || 0}
-                    maxTier={team?.maxTier || 9}
-                    disabled
-                  />
-                </li>
-              </ul>
-            </section>
-          </main>
-        </div>
-        <div className="flex flex-col">
-          <header className="flex items-center justify-between border-b-2 border-gray-300">
-            <h1 className="p-4">내 정보</h1>
-            <button onClick={closeModal} className="p-4">
-              X
-            </button>
-          </header>
-          <form onSubmit={handleSubmit(onSubmit)} action="" className="flex-1">
-            <main className="flex flex-col justify-between h-full p-4 space-y-6">
+            <div className="flex flex-col space-y-4 justify-evenly">
               <div className="flex flex-col space-y-2">
-                <div className="flex items-center space-x-2">
-                  <p className="pl-2">소환사 명</p>
-                  {errors.summonerName?.type === "required" && (
-                    <p className="text-sm text-red-700">
-                      {errors.summonerName.message}
-                    </p>
-                  )}
-                  {errors.summonerName?.type === "maxLength" && (
-                    <p className="text-sm text-red-700">
-                      소환사 명은 20자 이내로 입력해주세요.
-                    </p>
-                  )}
-                </div>
-                <input
-                  {...register("summonerName", {
-                    required: "소환사 명을 입력해주세요.",
-                    maxLength: 20,
-                  })}
-                  type="text"
-                  className="w-48 p-2 pl-4 text-black rounded-md focus:outline-none"
+                <p className="pl-2">지원하는 포지션</p>
+                <PositionSelect
+                  positions={selectedPosition}
+                  handlePositionChange={handlePositionSelect}
+                  PositionObj={PositionObj}
                 />
               </div>
-              <div className="flex flex-col space-y-4 justify-evenly">
-                <div className="flex flex-col space-y-2">
-                  <p className="pl-2">지원하는 포지션</p>
-                  <PositionSelect
-                    positions={selectedPosition}
-                    handlePositionChange={handlePositionSelect}
-                    PositionObj={PositionObj}
-                  />
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <label htmlFor="myTier" className="pl-2">
-                    내 티어
-                  </label>
-                  <TierSelect register={register} id="myTier" />
-                </div>
+              <div className="flex flex-col space-y-2">
+                <label htmlFor="myTier" className="pl-2">
+                  내 티어
+                </label>
+                <TierSelect register={register} id="myTier" />
               </div>
-              <div className="flex justify-evenly">
-                <button
-                  onClick={closeModal}
-                  className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
-                >
-                  취소
-                </button>
-                <button
-                  type={"submit"}
-                  className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
-                >
-                  신청
-                </button>
-              </div>
-            </main>
-          </form>
-        </div>
+            </div>
+            <div className="flex justify-evenly">
+              <button
+                onClick={closeModal}
+                className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
+              >
+                취소
+              </button>
+              <button
+                type={"submit"}
+                className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
+              >
+                신청
+              </button>
+            </div>
+          </main>
+        </form>
       </div>
-    </div>
+    </ModalWrapper>
   );
 }

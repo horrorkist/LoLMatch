@@ -5,6 +5,7 @@ import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useMutation from "../../lib/client/useMutation";
 import { TeamData } from "./CreateTeamModal";
+import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import TierRangeSelect from "./TierRangeSelect";
@@ -80,10 +81,7 @@ export default function TeamEditModal({
   }, [data]);
 
   return (
-    <div
-      className="relative text-gray-300 rounded-md bg-slate-500"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <ModalWrapper className="relative">
       {errors.name?.type === "required" && (
         <p className="absolute left-0 right-0 p-4 text-white bg-red-500 rounded-md -top-24 text-xm">
           {String(errors.name?.message)}
@@ -149,6 +147,6 @@ export default function TeamEditModal({
           </button>
         </div>
       </form>
-    </div>
+    </ModalWrapper>
   );
 }

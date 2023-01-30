@@ -16,7 +16,7 @@ export default function RecruitPost({
 }: RecruitPostProps) {
   return (
     <motion.li
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={onClick}
       className={className}
