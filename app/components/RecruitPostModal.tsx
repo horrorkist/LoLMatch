@@ -14,8 +14,6 @@ import TierRangeSelect from "./TierRangeSelect";
 import TierSelect from "./TierSelect";
 import UserLinkName from "./UserLinkName";
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
-
 interface RecruitPostModalProps {
   closeModal: () => void;
   team: TeamWithMembers;
@@ -142,7 +140,6 @@ export default function RecruitPostModal({
                 <p className="pl-2">모집 포지션</p>
                 <PositionSelect
                   positions={JSON.parse(team?.positions || "[0]")}
-                  PositionObj={PositionObj}
                 />
               </li>
               <li className="flex flex-col space-y-2">
@@ -195,7 +192,6 @@ export default function RecruitPostModal({
                 <PositionSelect
                   positions={selectedPosition}
                   handlePositionChange={handlePositionSelect}
-                  PositionObj={PositionObj}
                 />
               </div>
               <div className="flex flex-col space-y-2">

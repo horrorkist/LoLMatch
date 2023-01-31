@@ -15,8 +15,6 @@ interface TeamEditModalProps {
   team: Team;
 }
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
-
 export default function TeamEditModal({
   closeModal,
   team,
@@ -55,6 +53,11 @@ export default function TeamEditModal({
     } else {
       newPositions = [...positions.filter((p) => p !== 0), selectedPosition];
     }
+
+    if (newPositions.length >= 5) {
+      newPositions = [0];
+    }
+
     setPositions(newPositions);
   };
 
@@ -120,7 +123,6 @@ export default function TeamEditModal({
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={positions}
-              PositionObj={PositionObj}
             />
           </li>
           <li className="flex flex-col space-y-2">

@@ -1,14 +1,18 @@
 "use client";
 
+import { JoinPost, User } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import useMutation from "../../lib/client/useMutation";
 import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
+import Spinner from "./Spinner";
 import TierSelect from "./TierSelect";
 
 interface RegisterProfileModalProps {
   closeModal: () => void;
+  mutate: any;
 }
 
 export interface SummonerData {
@@ -19,12 +23,19 @@ export interface SummonerData {
 
 interface RegisterResponse {
   ok: boolean;
+  user?: User;
+  message?: string;
 }
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
+interface JoinPostResponse {
+  ok: boolean;
+  joinPost?: JoinPost;
+  message?: string;
+}
 
 export default function RegisterProfileModal({
   closeModal,
+  mutate,
 }: RegisterProfileModalProps) {
   const {
     register,
@@ -33,10 +44,10 @@ export default function RegisterProfileModal({
   } = useForm<SummonerData>();
 
   const [positions, setPositions] = useState<number[]>([0]);
-  // const [mutate, { data }] = useMutation<RegisterResponse>("/api/users/me");
-  const [loading, setLoading] = useState(false);
-  const [ok, setOk] = useState(false);
-  const [error, setError] = useState(null);
+  const [mutateUser, { data: userData, loading: userLoading }] =
+    useMutation<RegisterResponse>("/api/users/me");
+  const [mutateJoinPost, { data: joinPostData, loading: joinPostLoading }] =
+    useMutation<JoinPostResponse>("/api/posts/join");
 
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -54,64 +65,77 @@ export default function RegisterProfileModal({
     } else {
       newPositions = [...positions.filter((p) => p !== 0), selectedPosition];
     }
+
+    if (newPositions.length >= 5) {
+      newPositions = [0];
+    }
+
     setPositions(newPositions);
   };
 
   const onSubmit = async (data: SummonerData) => {
-    if (loading) {
+    if (userLoading || joinPostLoading) {
       alert("잠시만 기다려주세요.");
       return;
     }
 
-    setLoading(true);
+    // const user = await (
+    //   await fetch("/api/users/me", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       summonerName: data.name,
+    //       positions,
+    //     }),
+    //   })
+    // ).json();
 
-    const user = await (
-      await fetch("/api/users/me", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          summonerName: data.name,
-          tier: data.tier,
-          positions,
-        }),
-      })
-    ).json();
+    mutateUser(
+      {
+        summonerName: data.name,
+        positions,
+      },
+      "POST"
+    );
 
-    const response = await (
-      await fetch("/api/posts/join", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          qType: data.qType,
-        }),
-      })
-    ).json();
+    // const response = await (
+    //   await fetch("/api/posts/join", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       qType: data.qType,
+    //     }),
+    //   })
+    // ).json();
 
-    if (!response.ok) {
-      setError(response.error);
-    }
+    mutateJoinPost(
+      {
+        qType: data.qType,
+      },
+      "POST"
+    );
 
-    setOk(user.ok);
-
-    setLoading(false);
+    mutate();
   };
 
   useEffect(() => {
-    if (ok) {
+    if (userData?.ok && joinPostData?.ok) {
       alert("소환사 정보가 성공적으로 등록되었습니다.");
       closeModal();
     }
-  }, [ok]);
 
-  useEffect(() => {
-    if (error) {
-      alert(error);
+    if (userData?.message) {
+      alert(userData.message);
     }
-  }, [error]);
+
+    if (joinPostData?.message) {
+      alert(joinPostData.message);
+    }
+  }, [userData, joinPostData]);
 
   return (
     // <div
@@ -141,7 +165,7 @@ export default function RegisterProfileModal({
                 required: "소환사 이름을 입력해주세요.",
                 maxLength: {
                   value: 20,
-                  message: "소환사 이름은 10자 이내로 입력해주세요.",
+                  message: "소환사 이름은 20자 이내로 입력해주세요.",
                 },
               })}
               className="px-4 py-2 text-black rounded-md focus:outline-none"
@@ -157,7 +181,6 @@ export default function RegisterProfileModal({
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={positions}
-              PositionObj={PositionObj}
             />
           </li>
           <li className="flex flex-col space-y-2">
@@ -176,7 +199,7 @@ export default function RegisterProfileModal({
             type={"submit"}
             className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
           >
-            신청
+            {userLoading || joinPostLoading ? <Spinner /> : "확인"}
           </button>
         </div>
       </form>

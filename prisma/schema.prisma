@@ -57,6 +57,15 @@ model User {
   sentRequests        Request[]
   receivedInvitations Invitation[]
   joinPost            JoinPost?
+  RiotSummonerId      String?
+  RiotAccountId       String?
+  RiotPuuid           String?
+  RiotProfileIconId   Int?
+  matchHistory        String?
+  rank                String?
+  wins                Int?
+  losses              Int?
+  updatedAt           DateTime?    @default(now())
 
   @@index([teamId])
 }

@@ -11,6 +11,7 @@
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.5",
     "@prisma/client": "^4.9.0",
+    "@tailwindcss/line-clamp": "^0.4.2",
     "framer-motion": "^8.5.4",
     "iron-session": "^6.3.1",
     "next": "latest",

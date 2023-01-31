@@ -5,6 +5,12 @@ import { authOptions } from "../auth/[...nextauth]";
 import client from "../../../lib/server/client";
 import { User } from "@prisma/client";
 import { IronSessionOptions } from "iron-session";
+import {
+  getLeagueInfoByEncryptedSummonerId,
+  getMatchIdByPuuid,
+  getMatchInfoByMatchId,
+  getSummonerInfoBySummonerName,
+} from "../../../lib/server/api/riot";
 
 declare module "iron-session" {
   interface IronSessionData {
@@ -63,7 +69,103 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       });
     }
   } else if (req.method === "POST") {
-    const { summonerName, positions, tier } = req.body;
+    if (userId) {
+      const existing = await client.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (
+        existing?.updatedAt &&
+        Number(new Date()) - Number(existing.updatedAt) < 1000 * 30
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message: "30초 이내에는 다시 요청할 수 없습니다.",
+        });
+      }
+    }
+
+    const { summonerName, positions } = req.body;
+
+    if (!summonerName) {
+      return res.status(400).json({
+        ok: false,
+        message: "소환사명을 입력해주세요.",
+      });
+    }
+
+    const {
+      id: encryptedSummonerId,
+      accountId,
+      puuid,
+      name,
+      profileIconId,
+    } = await getSummonerInfoBySummonerName(summonerName);
+
+    if (!encryptedSummonerId) {
+      return res.status(400).json({
+        ok: false,
+        message: "존재하지 않는 소환사 명입니다.",
+      });
+    }
+
+    const matchIds = await getMatchIdByPuuid(puuid);
+
+    const matchHistory: boolean[] = [];
+
+    for (let i = 0; i < matchIds.length; i++) {
+      const {
+        info: { participants },
+      } = await getMatchInfoByMatchId(matchIds[i]);
+
+      let win = false;
+
+      participants.forEach((participant: any) => {
+        if (participant.puuid === puuid) {
+          win = participant.win;
+        }
+      });
+
+      matchHistory.push(win);
+    }
+
+    const leagueInfo: any = await getLeagueInfoByEncryptedSummonerId(
+      encryptedSummonerId
+    );
+
+    let tier, rank, wins, losses;
+
+    if (!leagueInfo) {
+      tier = "UNRANKED";
+      rank = null;
+      wins = null;
+      losses = null;
+    } else if (leagueInfo instanceof Array) {
+      tier = leagueInfo[0].tier;
+      rank = leagueInfo[0].rank;
+      wins = leagueInfo[0].wins;
+      losses = leagueInfo[0].losses;
+    } else {
+      tier = leagueInfo.tier;
+      rank = leagueInfo.rank;
+      wins = leagueInfo.wins;
+      losses = leagueInfo.losses;
+    }
+
+    const tierMap = new Map([
+      ["UNRANKED", 0],
+      ["IRON", 1],
+      ["BRONZE", 2],
+      ["SILVER", 3],
+      ["GOLD", 4],
+      ["PLATINUM", 5],
+      ["DIAMOND", 6],
+      ["MASTER", 7],
+      ["GRANDMASTER", 8],
+      ["CHALLENGER", 9],
+    ]);
 
     try {
       if (userId) {
@@ -72,17 +174,35 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
             id: userId,
           },
           data: {
-            summonerName,
+            summonerName: name,
             positions: JSON.stringify(positions),
-            tier: +tier,
+            tier: tierMap.get(tier),
+            rank,
+            wins,
+            losses,
+            matchHistory: JSON.stringify(matchHistory),
+            RiotSummonerId: encryptedSummonerId,
+            RiotAccountId: accountId,
+            RiotPuuid: puuid,
+            RiotProfileIconId: profileIconId,
+            updatedAt: new Date(),
           },
         });
       } else {
         user = await client.user.create({
           data: {
-            summonerName,
+            summonerName: name,
             positions: JSON.stringify(positions),
-            tier: +tier,
+            tier: tierMap.get(tier) || 0,
+            rank,
+            wins,
+            losses,
+            matchHistory: JSON.stringify(matchHistory),
+            RiotSummonerId: encryptedSummonerId,
+            RiotAccountId: accountId,
+            RiotPuuid: puuid,
+            RiotProfileIconId: profileIconId,
+            updatedAt: new Date(),
           },
         });
       }

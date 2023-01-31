@@ -14,8 +14,6 @@ export interface UserInfoFormData {
   tier: number;
 }
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
-
 export default function Profile() {
   const session = useSession({
     required: true,
@@ -72,6 +70,11 @@ export default function Profile() {
     } else {
       newPositions = [...positions.filter((p) => p !== 0), selectedPosition];
     }
+
+    if (newPositions.length >= 5) {
+      newPositions = [0];
+    }
+
     setPositions(newPositions);
   };
 
@@ -135,7 +138,6 @@ export default function Profile() {
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={positions}
-              PositionObj={PositionObj}
             />
           </div>
           <div className="flex flex-col space-y-2">

@@ -20,8 +20,6 @@ export interface TeamData {
   maxTier: number;
 }
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
-
 export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
   const {
     register,
@@ -48,6 +46,11 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
     } else {
       newPositions = [...positions.filter((p) => p !== 0), selectedPosition];
     }
+
+    if (newPositions.length >= 5) {
+      newPositions = [0];
+    }
+
     setPositions(newPositions);
   };
 
@@ -115,7 +118,6 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={positions}
-              PositionObj={PositionObj}
             />
           </li>
           <li className="flex flex-col space-y-2">

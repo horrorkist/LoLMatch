@@ -3,13 +3,13 @@ import { IFilterParams } from "../page";
 interface PositionSelectProps {
   handlePositionChange?: (e: React.MouseEvent<HTMLLIElement>) => void;
   positions?: number[];
-  PositionObj: string[];
 }
+
+const PositionObj = ["All", "TOP", "JUG", "MID", "BOT", "SUP"];
 
 export default function PositionSelect({
   handlePositionChange,
   positions,
-  PositionObj,
 }: PositionSelectProps) {
   return (
     <>

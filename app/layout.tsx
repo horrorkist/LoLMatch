@@ -12,12 +12,12 @@ const SWROptions = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html>
+    <html className="bg-slate-900">
       <head />
       <body>
         <Provider>
           <SWRConfig value={SWROptions}>
-            <div className="relative flex flex-col min-h-screen">
+            <div className="relative flex flex-col min-h-screen bg-slate-900">
               <Header />
               {children}
             </div>

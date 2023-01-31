@@ -15,8 +15,6 @@ interface JoinPostModalProps {
   post: JoinPostWithUser;
 }
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
-
 export default function JoinPostModal({
   closeModal,
   post,
@@ -121,7 +119,6 @@ export default function JoinPostModal({
                 <p className="pl-2">선호 포지션</p>
                 <PositionSelect
                   positions={JSON.parse(post?.user.positions || "[0]")}
-                  PositionObj={PositionObj}
                 />
               </li>
               <li className="flex flex-col space-y-2">
@@ -155,7 +152,6 @@ export default function JoinPostModal({
                 <PositionSelect
                   handlePositionChange={handlePositionChange}
                   positions={[invitingPosition]}
-                  PositionObj={PositionObj}
                 />
               </div>
             </div>

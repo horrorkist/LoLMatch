@@ -15,8 +15,6 @@ import { useForm } from "react-hook-form";
 import RegisterTeamModal from "../../components/RegisterTeamModal";
 import { AnimatePresence } from "framer-motion";
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
-
 export interface TeamWithMembers extends Team {
   users: User[];
 }
@@ -220,7 +218,6 @@ export default function TeamInfo() {
                 <p className="pl-2">모집 포지션</p>
                 <PositionSelect
                   positions={JSON.parse(data?.team?.positions || "[0]")}
-                  PositionObj={PositionObj}
                 />
               </div>
               <div className="flex flex-col space-y-2">

@@ -28,6 +28,7 @@ import JoinPostComponent from "./components/JoinPost";
 import { TeamWithMembers } from "./(userInfo)/team/page";
 import JoinPostModal from "./components/JoinPostModal";
 import { AnimatePresence } from "framer-motion";
+import Spinner from "./components/Spinner";
 
 export interface PostResponse {
   recruitPosts?: any;
@@ -58,7 +59,6 @@ enum ModalType {
   REGISTER_PROFILE,
 }
 
-const PositionObj = ["All", "TOP", "JUG", "MID", "ADC", "SUP"];
 const PostTypeObj = ["recruit", "join"];
 
 const limit = 5;
@@ -91,7 +91,7 @@ function Home() {
     }?page=${pageIndex}&limit=${limit}&filter=${JSON.stringify(filterParams)}`;
   };
 
-  const { isLoading, data, setSize, isValidating } = useSWRInfinite(
+  const { isLoading, data, setSize, isValidating, mutate } = useSWRInfinite(
     getKey,
     (url) => fetch(url).then((res) => res.json()),
     {
@@ -132,6 +132,11 @@ function Home() {
     } else {
       newPositions = [...prevPositions.filter((p) => p !== 0), position];
     }
+
+    if (newPositions.length >= 5) {
+      newPositions = [0];
+    }
+
     setFilterParams((prev) => ({
       ...prev,
       positions: newPositions,
@@ -224,6 +229,10 @@ function Home() {
     }
   }, [inModal]);
 
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+
   return (
     <div className={`relative p-4`}>
       <AnimatePresence>
@@ -239,7 +248,7 @@ function Home() {
         )}
         {inModal && modalType === ModalType.REGISTER_PROFILE && (
           <Overlay closeModal={closeModal}>
-            <RegisterProfileModal closeModal={closeModal} />
+            <RegisterProfileModal mutate={mutate} closeModal={closeModal} />
           </Overlay>
         )}
         {inModal && modalType === ModalType.JOIN_POST && clickedJoinPost && (
@@ -277,7 +286,6 @@ function Home() {
             <PositionSelect
               handlePositionChange={handlePositionChange}
               positions={filterParams.positions}
-              PositionObj={PositionObj}
             />
           </li>
           <li>
@@ -292,6 +300,14 @@ function Home() {
           </li>
         </ul>
         <div className="flex flex-col space-y-1">
+          {postType === PostType.RECRUIT ? null : (
+            <div className="flex items-center w-full h-8 space-x-4 text-xs text-gray-400 bg-slate-600">
+              <div className="w-[170px] pl-4 text-left">소환사 명</div>
+              <div className="w-[62px] text-center">티어</div>
+              <div className="text-center w-[195px]">선호 포지션</div>
+              <div className="text-center w-[105px]">승률</div>
+            </div>
+          )}
           {postType === PostType.RECRUIT
             ? data
                 ?.flat()
@@ -314,14 +330,12 @@ function Home() {
                   }}
                   key={post.id}
                   user={post.user}
-                  className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
+                  className="flex items-center p-2 text-white cursor-pointer bg-slate-700 hover:bg-slate-800"
                 />
               ))}
         </div>
         {isValidating ? (
-          <div className="flex items-center justify-center">
-            <div className="w-10 h-10 border-4 border-gray-300 rounded-full border-x-black border-b-black animate-spin"></div>
-          </div>
+          <Spinner />
         ) : (
           <div
             onClick={handleLoadMore}
