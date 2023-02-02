@@ -4,11 +4,11 @@ import { JoinPost, User } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useMutation from "../../lib/client/useMutation";
+import CancelModalButton from "./CancelModalButton";
 import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import Spinner from "./Spinner";
-import TierSelect from "./TierSelect";
 
 interface RegisterProfileModalProps {
   closeModal: () => void;
@@ -44,10 +44,8 @@ export default function RegisterProfileModal({
   } = useForm<SummonerData>();
 
   const [positions, setPositions] = useState<number[]>([0]);
-  const [mutateUser, { data: userData, loading: userLoading }] =
-    useMutation<RegisterResponse>("/api/users/me");
-  const [mutateJoinPost, { data: joinPostData, loading: joinPostLoading }] =
-    useMutation<JoinPostResponse>("/api/posts/join");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -74,68 +72,74 @@ export default function RegisterProfileModal({
   };
 
   const onSubmit = async (data: SummonerData) => {
-    if (userLoading || joinPostLoading) {
+    if (loading) {
       alert("잠시만 기다려주세요.");
       return;
     }
 
-    // const user = await (
-    //   await fetch("/api/users/me", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({
-    //       summonerName: data.name,
-    //       positions,
-    //     }),
-    //   })
-    // ).json();
+    setLoading(true);
 
-    mutateUser(
-      {
-        summonerName: data.name,
-        positions,
-      },
-      "POST"
-    );
+    const user = await (
+      await fetch("/api/users/me", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          summonerName: data.name,
+          positions,
+        }),
+      })
+    ).json();
 
-    // const response = await (
-    //   await fetch("/api/posts/join", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({
-    //       qType: data.qType,
-    //     }),
-    //   })
-    // ).json();
+    if (!user.ok) {
+      setMessage(user.message);
+      setLoading(false);
+      return;
+    }
 
-    mutateJoinPost(
-      {
-        qType: data.qType,
-      },
-      "POST"
-    );
+    // mutateUser(
+    //   {
+    //     summonerName: data.name,
+    //     positions,
+    //   },
+    //   "POST"
+    // );
 
-    mutate();
+    const response = await (
+      await fetch("/api/posts/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          qType: data.qType,
+        }),
+      })
+    ).json();
+
+    if (!response.ok) {
+      setMessage(response.message);
+      setLoading(false);
+      return;
+    }
+
+    // mutateJoinPost(
+    //   {
+    //     qType: data.qType,
+    //   },
+    //   "POST"
+    // );
+    setLoading(false);
+    alert("소환사 정보가 성공적으로 등록되었습니다.");
+    closeModal();
   };
 
   useEffect(() => {
-    if (userData?.ok && joinPostData?.ok) {
-      alert("소환사 정보가 성공적으로 등록되었습니다.");
-      closeModal();
+    if (message) {
+      alert(message);
     }
-
-    if (userData?.message) {
-      alert(userData.message);
-    }
-
-    if (joinPostData?.message) {
-      alert(joinPostData.message);
-    }
-  }, [userData, joinPostData]);
+  }, [message]);
 
   return (
     // <div
@@ -183,23 +187,14 @@ export default function RegisterProfileModal({
               positions={positions}
             />
           </li>
-          <li className="flex flex-col space-y-2">
-            <p className="pl-2">내 티어</p>
-            <TierSelect register={register} />
-          </li>
         </ul>
         <div className="flex justify-evenly">
-          <button
-            onClick={closeModal}
-            className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
-          >
-            취소
-          </button>
+          <CancelModalButton closeModal={closeModal}>취소</CancelModalButton>
           <button
             type={"submit"}
             className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
           >
-            {userLoading || joinPostLoading ? <Spinner /> : "확인"}
+            {loading ? <Spinner /> : "확인"}
           </button>
         </div>
       </form>

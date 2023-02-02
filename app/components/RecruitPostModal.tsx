@@ -7,9 +7,11 @@ import useSWR from "swr";
 import { UserInfoFormData } from "../(userInfo)/profile/page";
 import { TeamWithMembers } from "../(userInfo)/team/page";
 import useMutation from "../../lib/client/useMutation";
+import CancelModalButton from "./CancelModalButton";
 import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
+import Spinner from "./Spinner";
 import TierRangeSelect from "./TierRangeSelect";
 import TierSelect from "./TierSelect";
 import UserLinkName from "./UserLinkName";
@@ -41,14 +43,14 @@ export default function RecruitPostModal({
     },
   });
 
-  const [chiefName, setChiefName] = useState<string>("");
-
   const [selectedPosition, setSelectedPosition] = useState<number[]>([]);
 
   const [mutateUser, { data: userData, loading: userLoading }] =
     useMutation("/api/users/me");
   const [mutateRequest, { data: requestData, loading: requestLoading }] =
     useMutation<JoinRequestResponse>("/api/joinRequests");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handlePositionSelect = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
@@ -61,8 +63,8 @@ export default function RecruitPostModal({
     setSelectedPosition([position]);
   };
 
-  const onSubmit = (data: UserInfoFormData) => {
-    if (userLoading || requestLoading) {
+  const onSubmit = async (data: UserInfoFormData) => {
+    if (loading) {
       alert("잠시만 기다려주세요.");
       return;
     }
@@ -76,29 +78,64 @@ export default function RecruitPostModal({
       alert("포지션은 1개만 선택해주세요.");
       return;
     }
-    mutateUser(
-      {
-        summonerName: data.summonerName,
-        tier: data.tier,
-        positions: selectedPosition,
-      },
-      "POST"
-    );
-    mutateRequest(
-      {
-        teamId: team.id,
-      },
-      "POST"
-    );
-  };
 
-  useEffect(() => {
-    team.users.forEach((user) => {
-      if (user.id === team?.chiefId) {
-        setChiefName(user.summonerName || "팀장");
-      }
-    });
-  }, [team]);
+    setLoading(true);
+
+    const userResponse = await (
+      await fetch("/api/users/me", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          summonerName: data.summonerName,
+          positions: selectedPosition,
+        }),
+      })
+    ).json();
+
+    if (!userResponse.ok) {
+      setMessage(userResponse.message);
+      setLoading(false);
+      return;
+    }
+
+    const requestResponse = await (
+      await fetch("/api/joinRequests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          teamId: team.id,
+        }),
+      })
+    ).json();
+
+    if (!requestResponse.ok) {
+      setMessage(requestResponse.message);
+      setLoading(false);
+      return;
+    }
+
+    // mutateUser(
+    //   {
+    //     summonerName: data.summonerName,
+    //     positions: selectedPosition,
+    //   },
+    //   "POST"
+    // );
+    // mutateRequest(
+    //   {
+    //     teamId: team.id,
+    //   },
+    //   "POST"
+    // );
+
+    setLoading(false);
+    alert("가입 신청이 완료되었습니다.");
+    closeModal();
+  };
 
   useEffect(() => {
     if (!isLoading && data.ok) {
@@ -107,17 +144,10 @@ export default function RecruitPostModal({
   }, [isLoading, data]);
 
   useEffect(() => {
-    if (requestData?.ok) {
-      alert("가입 신청이 완료되었습니다.");
-      closeModal();
-      return;
+    if (message) {
+      alert(message);
     }
-
-    if (!requestData?.ok && requestData?.message) {
-      alert(requestData.message);
-      return;
-    }
-  }, [requestData]);
+  }, [message]);
 
   return (
     <ModalWrapper className="divide-gray-300 divide-x-1">
@@ -128,7 +158,7 @@ export default function RecruitPostModal({
         <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
           <div className="flex space-x-4">
             <p>팀장</p>
-            <UserLinkName>{chiefName}</UserLinkName>
+            <UserLinkName>{team.chief.summonerName}</UserLinkName>
           </div>
           <section>
             <ul className="flex flex-col space-y-4 justify-evenly">
@@ -194,25 +224,16 @@ export default function RecruitPostModal({
                   handlePositionChange={handlePositionSelect}
                 />
               </div>
-              <div className="flex flex-col space-y-2">
-                <label htmlFor="myTier" className="pl-2">
-                  내 티어
-                </label>
-                <TierSelect register={register} id="myTier" />
-              </div>
             </div>
             <div className="flex justify-evenly">
-              <button
-                onClick={closeModal}
-                className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
-              >
+              <CancelModalButton closeModal={closeModal}>
                 취소
-              </button>
+              </CancelModalButton>
               <button
                 type={"submit"}
                 className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
               >
-                신청
+                {loading ? <Spinner /> : "신청"}
               </button>
             </div>
           </main>

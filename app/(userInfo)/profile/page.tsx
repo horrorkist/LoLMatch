@@ -5,14 +5,30 @@ import { useRouter } from "next/navigation";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import PositionSelect from "../../components/PositionSelect";
-import TierSelect from "../../components/TierSelect";
 import useSWR from "swr";
 import useMutation from "../../../lib/client/useMutation";
+import UserLinkName from "../../components/UserLinkName";
+import TierImage from "../../components/TierImage";
+import Button from "../../components/Button";
+import Spinner from "../../components/Spinner";
 
 export interface UserInfoFormData {
   summonerName: string;
   tier: number;
 }
+
+const TierArray = [
+  "_",
+  "IRON",
+  "BRONZE",
+  "SILVER",
+  "GOLD",
+  "PLATINUM",
+  "DIAMOND",
+  "MASTER",
+  "GRANDMASTER",
+  "CHALLENGER",
+];
 
 export default function Profile() {
   const session = useSession({
@@ -37,7 +53,7 @@ export default function Profile() {
     },
   });
 
-  const [mutate, { loading, data }] = useMutation("api/profile");
+  const [mutate, { loading, data }] = useMutation("api/users/me");
 
   const onSubmit = async (data: UserInfoFormData) => {
     if (loading) {
@@ -48,9 +64,8 @@ export default function Profile() {
       {
         summonerName: data.summonerName,
         positions,
-        tier: data.tier,
       },
-      "PATCH"
+      "POST"
     );
   };
 
@@ -85,7 +100,12 @@ export default function Profile() {
   }, [userData, session, isLoading]);
 
   useEffect(() => {
-    if (data) {
+    if (data && data.ok) {
+      alert("정보가 수정되었습니다.");
+      return;
+    }
+
+    if (data && !data.ok) {
       alert(data.message);
     }
   }, [data]);
@@ -98,63 +118,99 @@ export default function Profile() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center flex-1 text-2xl">
+        정보를 불러 오는 중...
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center flex-1 bg-blue-300 min-w-[1200px]">
-      <div className="w-1/3 text-black bg-white border border-black rounded-md max-w-[400px]">
-        <header className="p-4 border-b border-black">
-          <p>이곳에 작성한 정보는 기본 정보로 등록됩니다.</p>
-        </header>
-        <form
-          className="flex flex-col p-4 space-y-6 text-sm"
-          onSubmit={handleSubmit(onSubmit)}
-          action=""
-        >
-          <div className="flex flex-col space-y-2">
-            <label className="flex items-center pl-2" htmlFor="summonerName">
-              소환사 명
-              {errors.summonerName?.type === "required" && (
-                <p className="pl-2 text-xs text-red-500">
-                  {errors.summonerName?.message}
-                </p>
+    <div className="flex items-center justify-center flex-1 min-w-[1200px]">
+      <div className="flex text-gray-300 divide-gray-300 rounded-md bg-slate-500 divide-x-1">
+        <div>
+          <header className="flex items-center p-4 border-b-2 border-gray-300">
+            <p>내 정보</p>
+          </header>
+          <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
+            <div className="flex items-center pl-2 space-x-4">
+              <p>소환사 명</p>
+              <UserLinkName>{userData.user.summonerName}</UserLinkName>
+            </div>
+            <div className="flex items-center pl-2 space-x-4">
+              <p className="">티어</p>
+              {userData.user.tier ? (
+                <>
+                  <TierImage tier={userData.user.tier} width={40} height={40} />
+                  <div className="flex">
+                    <p>{TierArray[userData.user.tier]}</p>
+                    &nbsp;
+                    <p>{userData.user.rank}</p>
+                  </div>
+                </>
+              ) : (
+                <p>언랭크</p>
               )}
-              {errors.summonerName?.type === "maxLength" && (
-                <p className="pl-2 text-xs text-red-500">
-                  소환사 명은 20자 이내로 입력해주세요.
-                </p>
-              )}
-            </label>
-            <input
-              className="w-48 p-2 pl-4 text-base text-white border border-black rounded-md focus:outline-none focus:shadow-md bg-slate-500"
-              {...register("summonerName", {
-                required: "소환사 명을 입력해주세요.",
-                maxLength: 20,
-              })}
-              type="text"
-              id="summonerName"
-            />
-          </div>
-          <div className="flex flex-col space-y-2">
-            <p className="pl-2">선호 포지션</p>
-            <PositionSelect
-              handlePositionChange={handlePositionChange}
-              positions={positions}
-            />
-          </div>
-          <div className="flex flex-col space-y-2">
-            <label className="pl-2" htmlFor="tier">
-              내 티어
-            </label>
-            <TierSelect register={register} id="tier" />
-          </div>
-          <div className="flex justify-center">
-            <button
-              type="submit"
-              className="px-6 py-4 text-white bg-blue-500 rounded-md hover:bg-black"
-            >
-              수정 완료
-            </button>
-          </div>
-        </form>
+            </div>
+            <section>
+              <ul className="flex flex-col space-y-4 justify-evenly">
+                <li className="flex flex-col space-y-2">
+                  <p className="pl-2">선호 포지션</p>
+                  <PositionSelect
+                    positions={JSON.parse(userData.positions || "[0]")}
+                  />
+                </li>
+              </ul>
+            </section>
+          </main>
+        </div>
+        <div className="">
+          <header className="p-4 border-b-2 border-gray-300">
+            <p>이곳에 작성한 정보는 기본 정보로 등록됩니다.</p>
+          </header>
+          <form
+            className="flex flex-col p-4 space-y-5"
+            onSubmit={handleSubmit(onSubmit)}
+            action=""
+          >
+            <div className="flex flex-col space-y-2">
+              <label className="flex items-center pl-2" htmlFor="summonerName">
+                소환사 명
+                {errors.summonerName?.type === "required" && (
+                  <p className="pl-2 text-xs text-red-500">
+                    {errors.summonerName?.message}
+                  </p>
+                )}
+                {errors.summonerName?.type === "maxLength" && (
+                  <p className="pl-2 text-xs text-red-500">
+                    소환사 명은 20자 이내로 입력해주세요.
+                  </p>
+                )}
+              </label>
+              <input
+                className="w-48 p-2 text-base text-black bg-white border border-black rounded-md focus:outline-none focus:shadow-md"
+                placeholder="소환사 명을 입력해주세요."
+                {...register("summonerName", {
+                  required: "소환사 명을 입력해주세요.",
+                  maxLength: 20,
+                })}
+                type="text"
+                id="summonerName"
+              />
+            </div>
+            <div className="flex flex-col space-y-2">
+              <p className="pl-2">선호 포지션</p>
+              <PositionSelect
+                handlePositionChange={handlePositionChange}
+                positions={positions}
+              />
+            </div>
+            <div className="flex justify-center h-10">
+              {loading ? <Spinner /> : <Button>수정 완료</Button>}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
 "use client";
 
-import { Team } from "@prisma/client";
+import { Team, User } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useMutation from "../../lib/client/useMutation";
+import CancelModalButton from "./CancelModalButton";
 import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
@@ -11,6 +12,7 @@ import TierRangeSelect from "./TierRangeSelect";
 
 interface CreateTeamModalProps {
   closeModal: () => void;
+  user: User;
 }
 
 export interface TeamData {
@@ -18,9 +20,13 @@ export interface TeamData {
   qType: number;
   minTier: number;
   maxTier: number;
+  summonerName: string;
 }
 
-export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
+export default function CreateTeamModal({
+  closeModal,
+  user,
+}: CreateTeamModalProps) {
   const {
     register,
     handleSubmit,
@@ -28,6 +34,8 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
   } = useForm<TeamData>();
 
   const [positions, setPositions] = useState<number[]>([0]);
+  const [mutateUser, { data: userData, loading: userLoading }] =
+    useMutation("/api/users/me");
   const [mutate, { data, loading }] = useMutation("/api/team");
 
   const handlePositionChange = (
@@ -55,10 +63,16 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
   };
 
   const onSubmit = (data: TeamData) => {
-    if (loading) {
+    if (loading || userLoading) {
       alert("처리 중입니다.");
       return;
     }
+    mutateUser(
+      {
+        summonerName: data.summonerName,
+      },
+      "POST"
+    );
     mutate(
       {
         name: data.name,
@@ -109,6 +123,21 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
               type="text"
             />
           </li>
+          <li className="flex items-center space-x-4">
+            <p className="pl-2">팀장</p>
+            <input
+              {...register("summonerName", {
+                required: "팀장의 소환사 명을 입력해주세요.",
+                maxLength: {
+                  value: 16,
+                  message: "소환사 명은 16자 이내로 입력해주세요.",
+                },
+              })}
+              className="px-4 py-2 text-black rounded-md focus:outline-none"
+              type="text"
+              defaultValue={user.summonerName || ""}
+            />
+          </li>
           <li className="flex flex-col space-y-2">
             <p className="pl-2">큐 타입</p>
             <QTypeSelect register={register} />
@@ -126,12 +155,7 @@ export default function CreateTeamModal({ closeModal }: CreateTeamModalProps) {
           </li>
         </ul>
         <div className="flex justify-evenly">
-          <button
-            onClick={closeModal}
-            className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
-          >
-            취소
-          </button>
+          <CancelModalButton closeModal={closeModal}>취소</CancelModalButton>
           <button
             type={"submit"}
             className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"

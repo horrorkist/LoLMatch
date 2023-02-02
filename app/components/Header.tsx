@@ -28,7 +28,8 @@ function Header() {
     }
   };
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
+    await fetch("api/register/delete");
     signOut();
   };
 

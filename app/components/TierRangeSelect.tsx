@@ -37,7 +37,7 @@ export default function TierRangeSelect({
         <option value="8">그랜드마스터</option>
         <option value="9">챌린저</option>
       </select>
-      <p>~</p>
+      <p className="text-white">~</p>
       <select
         {...register("maxTier")}
         disabled={disabled}
@@ -80,7 +80,7 @@ export default function TierRangeSelect({
         <option value="8">그랜드마스터</option>
         <option value="9">챌린저</option>
       </select>
-      <p>~</p>
+      <p className="text-white">~</p>
       <select
         disabled={disabled}
         onChange={handleTierChange}

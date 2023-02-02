@@ -37,13 +37,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
                 maxTier: true,
                 name: true,
                 qType: true,
-                users: {
+                chief: {
                   select: {
                     id: true,
                     summonerName: true,
+                    RiotProfileIconId: true,
+                    tier: true,
+                    rank: true,
                   },
                 },
-                chiefId: true,
               },
             },
           },
@@ -108,13 +110,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
                 maxTier: true,
                 name: true,
                 qType: true,
-                users: {
+                chief: {
                   select: {
                     id: true,
                     summonerName: true,
+                    RiotProfileIconId: true,
+                    tier: true,
+                    rank: true,
                   },
                 },
-                chiefId: true,
               },
             },
           },

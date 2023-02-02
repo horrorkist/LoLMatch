@@ -21,7 +21,7 @@ export default function InfoSidebar() {
             className={`w-full rounded-md ${
               path.path === pathname
                 ? "bg-gray-300 shadow-md text-black"
-                : "text-gray-500 hover:text-black"
+                : "text-white hover:text-gray-500"
             }`}
           >
             <Link

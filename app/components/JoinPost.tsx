@@ -2,6 +2,8 @@ import { User } from "@prisma/client";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import TierImage from "./TierImage";
+import UserLinkName from "./UserLinkName";
 
 interface RecruitPostProps {
   onClick?: () => void;
@@ -44,10 +46,6 @@ export default function JoinPost({
     }
   }, [user]);
 
-  useEffect(() => {
-    console.log(width);
-  }, [width]);
-
   return (
     <motion.li
       onClick={onClick}
@@ -69,20 +67,15 @@ export default function JoinPost({
           ) : (
             <div className="w-[40px] h-[40px] rounded-full bg-slate-800 group-hover:bg-slate-500"></div>
           )}
-          <span className="flex-1 block overflow-hidden text-sm whitespace-nowrap text-ellipsis">
+          <UserLinkName className="flex-1 block overflow-hidden text-sm whitespace-nowrap text-ellipsis">
             {user.summonerName}
-          </span>
+          </UserLinkName>
           {user.tier && user.tier > 0 ? (
             <div className="flex flex-col items-center justify-between w-20 space-y-1">
               <p className="text-[10px]">
                 {TierArray[user.tier]} {user.rank}
               </p>
-              <Image
-                src={`/ranked-emblems/Emblem_${TierArray[user.tier]}.png`}
-                alt="Tier Icon"
-                width={30}
-                height={30}
-              />
+              <TierImage tier={user.tier} width={30} height={30} />
             </div>
           ) : (
             <p className="w-20 text-center">언랭크</p>
@@ -106,8 +99,8 @@ export default function JoinPost({
             )}
           </ul>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="relative flex items-center w-32 h-8 overflow-hidden bg-transparent border border-white rounded-md">
+        <div className="flex items-center w-40 space-x-2">
+          <div className="relative flex items-center w-32 h-8 overflow-hidden bg-gray-500 border border-white rounded-md">
             {(user.wins || user.losses) && (
               <>
                 <div
@@ -140,6 +133,24 @@ export default function JoinPost({
               >
                 {winRate}%
               </p>
+            )}
+        </div>
+        <div className="flex items-center border border-gray-400 divide-gray-400 divide-x-1 w-max">
+          {user.matchHistory &&
+            JSON.parse(user.matchHistory).length > 0 &&
+            JSON.parse(user.matchHistory).map(
+              (history: boolean, index: number) => {
+                return (
+                  <div
+                    key={`${user.RiotSummonerId}${index}`}
+                    className={`w-5 h-5 text-white flex justify-center items-center text-xs ${
+                      history ? "bg-blue-500" : "bg-red-500"
+                    }`}
+                  >
+                    {history ? "승" : "패"}
+                  </div>
+                );
+              }
             )}
         </div>
       </div>

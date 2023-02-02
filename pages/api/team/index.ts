@@ -48,7 +48,21 @@ async function handler(
           id: foundUser.teamId || "",
         },
         include: {
-          users: true,
+          chief: true,
+          members: true,
+          receivedRequests: {
+            include: {
+              sentUser: true,
+            },
+            where: {
+              rejected: false,
+            },
+          },
+          sentInvitations: {
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
         },
       });
 
@@ -108,8 +122,12 @@ async function handler(
           minTier: +minTier,
           maxTier: +maxTier,
           qType,
-          chiefId: foundUser.id,
-          users: {
+          chief: {
+            connect: {
+              id: userId,
+            },
+          },
+          members: {
             connect: {
               id: userId,
             },
@@ -212,6 +230,7 @@ async function handler(
         deletedTeam,
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         ok: false,
         error,

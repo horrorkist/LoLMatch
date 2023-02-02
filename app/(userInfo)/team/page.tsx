@@ -10,13 +10,28 @@ import TierRangeSelect from "../../components/TierRangeSelect";
 import useSWR from "swr";
 import Button from "../../components/Button";
 import CreateTeamModal from "../../components/CreateTeamModal";
-import { Team, User } from "@prisma/client";
+import { Invitation, Request, Team, User } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import RegisterTeamModal from "../../components/RegisterTeamModal";
 import { AnimatePresence } from "framer-motion";
+import UserInfoBar from "../../components/UserInfoBar";
+import UserLinkName from "../../components/UserLinkName";
+import TierImage from "../../components/TierImage";
+import UserProfileIcon from "../../components/UserProfileIcon";
+import WinRateBar from "../../components/WinRateBar";
+import UserMatchHistory from "../../components/UserMatchHistory";
+import PositionImage from "../../components/PositionImage";
+import JoinRequestModal from "../../components/JoinRequestModal";
+
+export interface RequestWithUser extends Request {
+  sentUser: User;
+}
 
 export interface TeamWithMembers extends Team {
-  users: User[];
+  chief: User;
+  members: User[];
+  receivedRequests: RequestWithUser[];
+  sentInvitations: Invitation[];
 }
 
 interface TeamResponse {
@@ -26,12 +41,31 @@ interface TeamResponse {
   message?: string;
 }
 
+const TierArray = [
+  "_",
+  "Iron",
+  "Bronze",
+  "Silver",
+  "Gold",
+  "Platinum",
+  "Diamond",
+  "Master",
+  "Grandmaster",
+  "Challenger",
+];
+
+enum ModalType {
+  EDIT,
+  REGISTER,
+  CREATE,
+  REQUEST,
+}
+
 export default function TeamInfo() {
   const session = useSession();
-  const [inEditModal, setInEditModal] = useState(false);
-  const [inRegisterModal, setInRegisterModal] = useState(false);
-  const [inCreateTeamModal, setInCreateTeamModal] = useState(false);
-  const [inRequestModal, setInRequestModal] = useState(false);
+  const [inModal, setInModal] = useState(false);
+  const [modalType, setModalType] = useState<ModalType>();
+  const [clickedRequest, setClickedRequest] = useState<RequestWithUser>();
   const {
     data,
     isLoading,
@@ -49,13 +83,12 @@ export default function TeamInfo() {
       maxTier: data?.team?.maxTier || 9,
     },
   });
+  const { data: userData, isLoading: userLoading } = useSWR("/api/users/me");
   const [isChief, setIsChief] = useState(false);
 
   const closeModal = () => {
-    setInEditModal(false);
-    setInRequestModal(false);
-    setInCreateTeamModal(false);
-    setInRegisterModal(false);
+    setInModal(false);
+    setModalType(undefined);
   };
 
   const onDeleteClick = () => {
@@ -65,12 +98,12 @@ export default function TeamInfo() {
     }
     if (!data || !data.team) return;
     if (confirm("정말로 팀을 해체하시겠습니까?")) {
-      if (data.team.users.length > 1) {
+      if (data.team.members.length > 1) {
         alert("팀원이 남아있어 팀을 해체할 수 없습니다.");
         return;
       }
 
-      if (session?.data?.user?.id !== data.team.chiefId) {
+      if (userData?.user?.id !== data.team.chiefId) {
         alert("권한이 없습니다.");
         return;
       }
@@ -89,11 +122,11 @@ export default function TeamInfo() {
             teamMutate({
               ok: false,
             });
-            setDeleteLoading(false);
           } else {
             alert(data.message);
           }
         });
+      setDeleteLoading(false);
     }
   };
 
@@ -103,11 +136,28 @@ export default function TeamInfo() {
       return;
     }
 
-    setInCreateTeamModal(true);
+    setInModal(true);
+    setModalType(ModalType.CREATE);
+  };
+
+  const onEditclick = () => {
+    setInModal(true);
+    setModalType(ModalType.EDIT);
+  };
+
+  const onRegisterClick = () => {
+    setInModal(true);
+    setModalType(ModalType.REGISTER);
+  };
+
+  const onRequestClick = (request: RequestWithUser) => {
+    setInModal(true);
+    setClickedRequest(request);
+    setModalType(ModalType.REQUEST);
   };
 
   useEffect(() => {
-    if (inEditModal || inRequestModal) {
+    if (inModal) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -116,8 +166,12 @@ export default function TeamInfo() {
 
   useEffect(() => {
     if (data && data.ok) {
-      setIsChief(data.team?.chiefId === session?.data?.user.id);
+      setIsChief(data.team?.chiefId === userData?.user?.id);
     }
+  }, [data]);
+
+  useEffect(() => {
+    console.log(data);
   }, [data]);
 
   if (session.status === "loading") {
@@ -143,15 +197,19 @@ export default function TeamInfo() {
   ) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 space-y-4">
-        <AnimatePresence>
-          {inCreateTeamModal && (
+        {inModal && modalType === ModalType.CREATE && (
+          <AnimatePresence>
             <Overlay closeModal={closeModal}>
-              <CreateTeamModal closeModal={closeModal} />
+              <CreateTeamModal user={userData?.user} closeModal={closeModal} />
             </Overlay>
-          )}
-          <h1 className="text-2xl">아직 팀이 없으시네요!</h1>
-          <Button onClick={onCreateClick}>팀 만들기</Button>
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
+        <h1 key={"teamH1"} className="text-2xl">
+          아직 팀이 없으시네요!
+        </h1>
+        <Button key={"teampagecreatebutton"} onClick={onCreateClick}>
+          팀 만들기
+        </Button>
       </div>
     );
   }
@@ -159,36 +217,40 @@ export default function TeamInfo() {
   return (
     <div className="flex flex-1">
       <AnimatePresence>
-        {inEditModal && (
+        {inModal && modalType === ModalType.EDIT && (
           <Overlay closeModal={closeModal}>
             <TeamEditModal team={data?.team!} closeModal={closeModal} />
           </Overlay>
         )}
-        {inRegisterModal && (
+        {inModal && modalType === ModalType.REGISTER && (
           <Overlay closeModal={closeModal}>
             <RegisterTeamModal team={data?.team!} closeModal={closeModal} />
           </Overlay>
         )}
+        {inModal && modalType === ModalType.REQUEST && clickedRequest && (
+          <Overlay closeModal={closeModal}>
+            <JoinRequestModal
+              closeModal={closeModal}
+              request={clickedRequest}
+              teamId={data?.team?.id!}
+            />
+          </Overlay>
+        )}
       </AnimatePresence>
-      <div className="flex flex-col w-2/3 min-w-[800px] px-12 py-8 space-y-4 bg-blue-300">
+      <div className="flex flex-col w-2/3 px-12 py-8 space-y-4 min-w-min">
         <h1 className="flex items-center justify-start w-full text-3xl text-white">
           <p>{data?.team?.name}</p>
           {isChief ? (
             <>
-              <Button
-                className="ml-4 text-sm"
-                onClick={() => setInEditModal(true)}
-              >
+              <Button className="ml-4 text-sm" onClick={onEditclick}>
                 팀 정보 수정
               </Button>
-              <Button
-                className="ml-4 text-sm"
-                onClick={() => setInRegisterModal(true)}
-              >
+              <Button className="ml-4 text-sm" onClick={onRegisterClick}>
                 모집 글 등록
               </Button>
               <Button
                 onClick={onDeleteClick}
+                cancel
                 className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
               >
                 팀 해체하기
@@ -197,6 +259,7 @@ export default function TeamInfo() {
           ) : (
             <Button
               onClick={() => console.log("팀 탈퇴하기")}
+              cancel
               className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
             >
               팀 탈퇴하기
@@ -204,8 +267,8 @@ export default function TeamInfo() {
           )}
         </h1>
         <div className="flex-1">
-          <section className="flex flex-col w-full h-full overflow-hidden bg-white rounded-md">
-            <header className="flex p-4 space-x-8 border-b border-black">
+          <section className="flex flex-col w-full h-full overflow-hidden rounded-md bg-slate-400">
+            <header className="flex p-4 space-x-8 text-white border-b border-black">
               <div className="flex flex-col space-y-2">
                 <p className="pl-2">큐 타입</p>
                 <QTypeSelect
@@ -231,11 +294,11 @@ export default function TeamInfo() {
               </div>
             </header>
             <section className="grid flex-1 grid-cols-1 grid-rows-5 space-y-1">
-              <div className="flex items-center w-full p-4 bg-slate-500">1</div>
-              <div className="flex items-center w-full p-4 bg-slate-500">1</div>
-              <div className="flex items-center w-full p-4 bg-slate-500">1</div>
-              <div className="flex items-center w-full p-4 bg-slate-500">1</div>
-              <div className="flex items-center w-full p-4 bg-slate-500">1</div>
+              {data?.team?.members.map((user) => {
+                return (
+                  <UserInfoBar key={`teamuserinfo${user.id}`} user={user} />
+                );
+              })}
             </section>
           </section>
         </div>
@@ -243,7 +306,45 @@ export default function TeamInfo() {
       <div className="flex flex-col w-1/3 min-w-[300px] px-12 py-8 space-y-4 bg-blue-300">
         <h1 className="text-3xl text-white">가입 신청 목록</h1>
         <div className="flex-1">
-          <section className="w-full h-full bg-white rounded-md"></section>
+          <section className="w-full h-full bg-white rounded-md">
+            <ul className="flex flex-col h-full space-y-1 overflow-scroll">
+              {data?.team?.receivedRequests?.map((request) => {
+                return (
+                  <li
+                    onClick={() => onRequestClick(request)}
+                    className="flex items-center justify-start p-4 space-x-4 text-white cursor-pointer bg-slate-500 hover:bg-slate-400"
+                    key={request.id}
+                  >
+                    {request.sentUser.tier && request.sentUser.tier > 0 ? (
+                      <div className="flex flex-col items-center justify-between space-y-1">
+                        <p className="text-xs whitespace-nowrap">
+                          {TierArray[request.sentUser.tier]}{" "}
+                          {request.sentUser.rank}
+                        </p>
+                        <TierImage
+                          tier={request.sentUser.tier}
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                    ) : (
+                      <p className="w-20 text-center">언랭크</p>
+                    )}
+                    <UserLinkName className="overflow-hidden w-[100px] whitespace-nowrap text-ellipsis">
+                      {request.summonerName}
+                    </UserLinkName>
+                    <PositionImage
+                      width={40}
+                      height={40}
+                      positions={request?.position || "[0]"}
+                    />
+                    <WinRateBar user={request.sentUser} />
+                    <UserMatchHistory user={request.sentUser} count={5} />
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         </div>
       </div>
     </div>

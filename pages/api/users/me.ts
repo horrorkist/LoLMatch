@@ -11,6 +11,7 @@ import {
   getMatchInfoByMatchId,
   getSummonerInfoBySummonerName,
 } from "../../../lib/server/api/riot";
+import ironsession from "../ironsession";
 
 declare module "iron-session" {
   interface IronSessionData {
@@ -20,7 +21,7 @@ declare module "iron-session" {
   }
 }
 
-export const sessionOptions: IronSessionOptions = {
+export var sessionOptions: IronSessionOptions = {
   password: "4.96v=AjNYrF6^x_e}tPfE2Kbv#:c?xrMn6P70*mE2+^aA-uauA^Ji3}=RA7)u6g",
   cookieName: "nextjs-iron-session",
   cookieOptions: {
@@ -29,10 +30,14 @@ export const sessionOptions: IronSessionOptions = {
 };
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const NextApiSession = await unstable_getServerSession(req, res, authOptions);
+  const NextAuthSession = await unstable_getServerSession(
+    req,
+    res,
+    authOptions
+  );
   const { session: IronSession } = req;
 
-  const userId = NextApiSession?.user?.id || IronSession?.user?.id;
+  const userId = NextAuthSession?.user?.id || IronSession?.user?.id;
 
   let user: User | null;
 
@@ -95,6 +100,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         message: "소환사명을 입력해주세요.",
       });
     }
+    const response = await getSummonerInfoBySummonerName(summonerName);
 
     const {
       id: encryptedSummonerId,
@@ -102,7 +108,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       puuid,
       name,
       profileIconId,
-    } = await getSummonerInfoBySummonerName(summonerName);
+    } = response;
 
     if (!encryptedSummonerId) {
       return res.status(400).json({
@@ -169,13 +175,27 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     try {
       if (userId) {
-        user = await client.user.update({
+        user = await client.user.upsert({
           where: {
             id: userId,
           },
-          data: {
+          update: {
             summonerName: name,
-            positions: JSON.stringify(positions),
+            positions: JSON.stringify(positions || [0]),
+            tier: tierMap.get(tier),
+            rank,
+            wins,
+            losses,
+            matchHistory: JSON.stringify(matchHistory),
+            RiotSummonerId: encryptedSummonerId,
+            RiotAccountId: accountId,
+            RiotPuuid: puuid,
+            RiotProfileIconId: profileIconId,
+            updatedAt: new Date(),
+          },
+          create: {
+            summonerName: name,
+            positions: JSON.stringify(positions || [0]),
             tier: tierMap.get(tier),
             rank,
             wins,
@@ -192,7 +212,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         user = await client.user.create({
           data: {
             summonerName: name,
-            positions: JSON.stringify(positions),
+            positions: JSON.stringify(positions || [0]),
             tier: tierMap.get(tier) || 0,
             rank,
             wins,

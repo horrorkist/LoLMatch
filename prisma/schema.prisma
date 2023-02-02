@@ -52,8 +52,9 @@ model User {
   summonerName        String?
   positions           String?
   tier                Int?
-  teamId              String?      @unique
-  team                Team?        @relation(fields: [teamId], references: [id])
+  teamId              String?
+  team                Team?        @relation("b", fields: [teamId], references: [id])
+  leadingTeam         Team?        @relation("a")
   sentRequests        Request[]
   receivedInvitations Invitation[]
   joinPost            JoinPost?
@@ -81,8 +82,9 @@ model VerificationToken {
 model Team {
   id               String       @id @default(cuid())
   name             String
-  chiefId          String
-  users            User[]
+  chiefId          String?      @unique
+  chief            User?        @relation("a", fields: [chiefId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  members          User[]       @relation("b")
   receivedRequests Request[]
   sentInvitations  Invitation[]
   recruitPost      RecruitPost?

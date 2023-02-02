@@ -5,15 +5,29 @@ import useMutation from "../../lib/client/useMutation";
 import { JoinPostWithUser } from "../page";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
-import TierSelect from "./TierSelect";
 import UserLinkName from "./UserLinkName";
 import useSWR from "swr";
 import ModalWrapper from "./ModalWrapper";
+import CancelModalButton from "./CancelModalButton";
+import TierImage from "./TierImage";
 
 interface JoinPostModalProps {
   closeModal: () => void;
   post: JoinPostWithUser;
 }
+
+const TierArray = [
+  "_",
+  "IRON",
+  "BRONZE",
+  "SILVER",
+  "GOLD",
+  "PLATINUM",
+  "DIAMOND",
+  "MASTER",
+  "GRANDMASTER",
+  "CHALLENGER",
+];
 
 export default function JoinPostModal({
   closeModal,
@@ -105,9 +119,24 @@ export default function JoinPostModal({
           <p>소환사 정보</p>
         </header>
         <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
-          <div className="flex pl-2 space-x-4">
+          <div className="flex items-center pl-2 space-x-4">
             <p>소환사 명</p>
             <UserLinkName>{post?.user.summonerName}</UserLinkName>
+          </div>
+          <div className="flex items-center pl-2 space-x-4">
+            <p className="">티어</p>
+            {post?.user.tier ? (
+              <>
+                <TierImage tier={post?.user.tier} width={40} height={40} />
+                <div className="flex">
+                  <p>{TierArray[post?.user.tier]}</p>
+                  &nbsp;
+                  <p>{post?.user.rank}</p>
+                </div>
+              </>
+            ) : (
+              <p>언랭크</p>
+            )}
           </div>
           <section>
             <ul className="flex flex-col space-y-4 justify-evenly">
@@ -121,10 +150,6 @@ export default function JoinPostModal({
                   positions={JSON.parse(post?.user.positions || "[0]")}
                 />
               </li>
-              <li className="flex flex-col space-y-2">
-                <p className="pl-2">티어</p>
-                <TierSelect value={post?.user.tier} disabled />
-              </li>
             </ul>
           </section>
         </main>
@@ -137,7 +162,7 @@ export default function JoinPostModal({
           </button>
         </header>
         <form onSubmit={onSubmit} action="" className="flex-1">
-          <main className="flex flex-col h-full p-4">
+          <main className="flex flex-col h-full p-4 space-y-6">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center mb-2 space-x-4">
                 <p className="pl-2">팀 이름</p>
@@ -156,12 +181,9 @@ export default function JoinPostModal({
               </div>
             </div>
             <div className="flex mt-auto justify-evenly">
-              <button
-                onClick={closeModal}
-                className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
-              >
+              <CancelModalButton closeModal={closeModal}>
                 취소
-              </button>
+              </CancelModalButton>
               <button
                 type={"submit"}
                 className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"

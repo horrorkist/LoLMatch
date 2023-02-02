@@ -11,6 +11,9 @@ export default function UserLinkName({
 }) {
   return (
     <a
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
       href={`https://op.gg/summoners/kr/${children}`}
       rel="noreferrer"
       target="_blank"

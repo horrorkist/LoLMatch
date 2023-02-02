@@ -3,6 +3,7 @@
 import { Team } from "@prisma/client";
 import { FormEvent, useEffect } from "react";
 import useMutation from "../../lib/client/useMutation";
+import CancelModalButton from "./CancelModalButton";
 import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
@@ -82,12 +83,7 @@ export default function RegisterTeamModal({
             </li>
           </ul>
           <div className="flex justify-evenly">
-            <button
-              onClick={closeModal}
-              className="w-1/3 px-4 py-2 text-black bg-white border border-black rounded-md hover:border-none hover:bg-red-700 hover:text-white hover:border-transparent"
-            >
-              취소
-            </button>
+            <CancelModalButton closeModal={closeModal}>취소</CancelModalButton>
             <button
               type={"submit"}
               className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"

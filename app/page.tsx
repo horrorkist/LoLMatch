@@ -46,10 +46,10 @@ export interface JoinPostWithUser extends JoinPost {
   user: User;
 }
 
-interface TeamResponse {
+interface UserResponse {
   ok: boolean;
-  team?: Team;
-  message?: string;
+  user?: User;
+  error?: any;
 }
 
 enum ModalType {
@@ -107,19 +107,23 @@ function Home() {
     }
   );
 
+  const { data: userData, isLoading: userLoading } =
+    useSWR<UserResponse>("/api/users/me");
+
   // session
   const session = useSession();
-  const { data: teamData } = useSWR<TeamResponse>("/api/team");
 
   // 변경 관리 함수
   const handlePositionChange = (
     e: MouseEvent<HTMLLIElement, globalThis.MouseEvent>
   ) => {
     if (isLoading || isValidating) return;
-    setSize(0);
 
     const position = Number(e.currentTarget.dataset.position);
     const prevPositions = filterParams.positions;
+    if (position === 0 && prevPositions.length === 1 && prevPositions[0] === 0)
+      return;
+    setSize(0);
 
     let newPositions: number[];
 
@@ -204,6 +208,10 @@ function Home() {
     setModalType(ModalType.REGISTER_PROFILE);
   };
 
+  useEffect(() => {
+    console.log(userData);
+  }, [userData]);
+
   // 데이터 로드
   // useEffect(() => {
   //   if (!isLoading && data) {
@@ -230,8 +238,8 @@ function Home() {
   }, [inModal]);
 
   useEffect(() => {
-    console.log(data);
-  }, [data]);
+    console.log(userData);
+  }, [userData]);
 
   return (
     <div className={`relative p-4`}>
@@ -241,9 +249,9 @@ function Home() {
             <RecruitPostModal team={recruitTeam} closeModal={closeModal} />
           </Overlay>
         )}
-        {inModal && modalType === ModalType.CREATE_TEAM && (
+        {inModal && modalType === ModalType.CREATE_TEAM && userData?.user && (
           <Overlay closeModal={closeModal}>
-            <CreateTeamModal closeModal={closeModal} />
+            <CreateTeamModal user={userData?.user} closeModal={closeModal} />
           </Overlay>
         )}
         {inModal && modalType === ModalType.REGISTER_PROFILE && (
@@ -263,11 +271,11 @@ function Home() {
         <div className="flex flex-row-reverse">
           {postType === PostType.JOIN ? (
             <Button onClick={handleRegister}>소환사 등록하기</Button>
-          ) : (teamData?.ok === false &&
-              teamData?.message === "존재하지 않는 팀입니다.") ||
+          ) : userData?.ok === false ||
+            !userData?.user?.teamId ||
             session.status === "unauthenticated" ? (
             <Button onClick={handleCreateTeam}>팀 만들기</Button>
-          ) : teamData?.ok ? (
+          ) : userData.user.teamId ? (
             <Link href={"/team"}>
               <Button>내 팀 보기</Button>
             </Link>
@@ -300,39 +308,54 @@ function Home() {
           </li>
         </ul>
         <div className="flex flex-col space-y-1">
-          {postType === PostType.RECRUIT ? null : (
+          {postType === PostType.RECRUIT ? (
+            <div className="flex items-center w-full h-8 space-x-4 text-xs text-gray-400 bg-slate-600">
+              <div className="w-[140px] pl-4 text-left">팀 이름</div>
+              <div className="w-[162px] text-center">팀장</div>
+              <div className="text-center w-[70px]">팀장 티어</div>
+              <div className="text-center w-[175px]">모집 포지션</div>
+              <div className="w-[210px] text-center">모집 티어</div>
+            </div>
+          ) : (
             <div className="flex items-center w-full h-8 space-x-4 text-xs text-gray-400 bg-slate-600">
               <div className="w-[170px] pl-4 text-left">소환사 명</div>
               <div className="w-[62px] text-center">티어</div>
               <div className="text-center w-[195px]">선호 포지션</div>
-              <div className="text-center w-[105px]">승률</div>
+              <div className="text-center w-[108px]">승률</div>
+              <div className="flex-1 text-center">최근 전적</div>
             </div>
           )}
-          {postType === PostType.RECRUIT
-            ? data
-                ?.flat()
-                .map((post) => (
-                  <RecruitPost
-                    onClick={() => handleClickRecruitPost(post.team)}
-                    key={post.id}
-                    team={post.team}
-                    className="flex items-center justify-around p-4 cursor-pointer even:bg-blue-400 odd:bg-blue-300 hover:bg-blue-100"
-                  />
-                ))
-            : data?.flat().map((post) => (
-                <JoinPostComponent
-                  onClick={() => {
-                    if (teamData?.ok) {
-                      handleClickJoinPost(post);
-                    } else {
-                      alert("먼저 팀을 만들어주세요.");
-                    }
-                  }}
+          {data?.flat().length === 0 ? (
+            <div className="flex items-center justify-center h-10 text-white">
+              조건에 맞는 글이 없습니다.
+            </div>
+          ) : postType === PostType.RECRUIT ? (
+            data
+              ?.flat()
+              .map((post) => (
+                <RecruitPost
+                  onClick={() => handleClickRecruitPost(post.team)}
                   key={post.id}
-                  user={post.user}
-                  className="flex items-center p-2 text-white cursor-pointer bg-slate-700 hover:bg-slate-800"
+                  team={post.team}
+                  className="flex items-center p-4 text-white cursor-pointer bg-slate-700 hover:bg-slate-800"
                 />
-              ))}
+              ))
+          ) : (
+            data?.flat().map((post) => (
+              <JoinPostComponent
+                onClick={() => {
+                  if (userData?.user?.teamId) {
+                    handleClickJoinPost(post);
+                  } else {
+                    alert("먼저 팀을 만들어주세요.");
+                  }
+                }}
+                key={post.id}
+                user={post.user}
+                className="flex items-center p-2 text-white cursor-pointer bg-slate-700 hover:bg-slate-800"
+              />
+            ))
+          )}
         </div>
         {isValidating ? (
           <Spinner />
