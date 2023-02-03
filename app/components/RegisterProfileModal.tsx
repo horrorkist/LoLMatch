@@ -3,7 +3,6 @@
 import { JoinPost, User } from "@prisma/client";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import useMutation from "../../lib/client/useMutation";
 import CancelModalButton from "./CancelModalButton";
 import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
@@ -12,7 +11,7 @@ import Spinner from "./Spinner";
 
 interface RegisterProfileModalProps {
   closeModal: () => void;
-  mutate: any;
+  mutatePosts: any;
 }
 
 export interface SummonerData {
@@ -21,21 +20,21 @@ export interface SummonerData {
   tier: number;
 }
 
-interface RegisterResponse {
-  ok: boolean;
-  user?: User;
-  message?: string;
-}
+// interface RegisterResponse {
+//   ok: boolean;
+//   user?: User;
+//   message?: string;
+// }
 
-interface JoinPostResponse {
-  ok: boolean;
-  joinPost?: JoinPost;
-  message?: string;
-}
+// interface JoinPostResponse {
+//   ok: boolean;
+//   joinPost?: JoinPost;
+//   message?: string;
+// }
 
 export default function RegisterProfileModal({
   closeModal,
-  mutate,
+  mutatePosts,
 }: RegisterProfileModalProps) {
   const {
     register,
@@ -133,6 +132,7 @@ export default function RegisterProfileModal({
     setLoading(false);
     alert("소환사 정보가 성공적으로 등록되었습니다.");
     closeModal();
+    mutatePosts();
   };
 
   useEffect(() => {

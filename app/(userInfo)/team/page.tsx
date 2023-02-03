@@ -152,6 +152,8 @@ export default function TeamInfo() {
   };
 
   const onRequestClick = (request: RequestWithUser) => {
+    if (!isChief) return;
+
     setInModal(true);
     setClickedRequest(request);
     setModalType(ModalType.REQUEST);
@@ -163,12 +165,14 @@ export default function TeamInfo() {
       return;
     }
 
-    mutateExit(
-      {
-        teamId: data?.team?.id,
-      },
-      "DELETE"
-    );
+    if (confirm("정말로 팀에서 탈퇴하시겠습니까?")) {
+      mutateExit(
+        {
+          teamId: data?.team?.id,
+        },
+        "DELETE"
+      );
+    }
   };
 
   useEffect(() => {

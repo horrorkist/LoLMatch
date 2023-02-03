@@ -256,7 +256,10 @@ function Home() {
         )}
         {inModal && modalType === ModalType.REGISTER_PROFILE && (
           <Overlay closeModal={closeModal}>
-            <RegisterProfileModal mutate={mutate} closeModal={closeModal} />
+            <RegisterProfileModal
+              mutatePosts={mutate}
+              closeModal={closeModal}
+            />
           </Overlay>
         )}
         {inModal && modalType === ModalType.JOIN_POST && clickedJoinPost && (

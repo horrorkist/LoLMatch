@@ -24,6 +24,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         where: {
           userId,
         },
+        include: {
+          sentTeam: {
+            include: {
+              chief: true,
+            },
+          },
+        },
       });
 
       return res.status(200).json({

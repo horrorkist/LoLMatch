@@ -1,8 +1,8 @@
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]";
-import client from "../../../lib/server/client";
+import { authOptions } from "../../auth/[...nextauth]";
+import client from "../../../../lib/server/client";
 import { User } from "@prisma/client";
 import { IronSessionOptions } from "iron-session";
 import {
@@ -10,8 +10,8 @@ import {
   getMatchIdByPuuid,
   getMatchInfoByMatchId,
   getSummonerInfoBySummonerName,
-} from "../../../lib/server/api/riot";
-import ironsession from "../ironsession";
+} from "../../../../lib/server/api/riot";
+import ironsession from "../../ironsession";
 
 declare module "iron-session" {
   interface IronSessionData {

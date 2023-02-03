@@ -10,6 +10,7 @@ import useSWR from "swr";
 import ModalWrapper from "./ModalWrapper";
 import CancelModalButton from "./CancelModalButton";
 import TierImage from "./TierImage";
+import Spinner from "./Spinner";
 
 interface JoinPostModalProps {
   closeModal: () => void;
@@ -188,7 +189,7 @@ export default function JoinPostModal({
                 type={"submit"}
                 className="w-1/3 px-4 py-2 text-white bg-blue-500 border border-blue-500 rounded-md hover:bg-black hover:text-white hover:border-white"
               >
-                초대
+                {loading ? <Spinner /> : "초대"}
               </button>
             </div>
           </main>
