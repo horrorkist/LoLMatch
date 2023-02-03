@@ -22,20 +22,20 @@ const TierArray = [
 
 export default function UserInfoBar({ user }: { user: User }) {
   return (
-    <div className="flex items-center w-full p-4 space-x-6 text-white min-w-fit bg-slate-500">
+    <div className="flex items-center w-full p-4 space-x-6 text-white bg-slate-500">
       {user.RiotProfileIconId ? (
         <Image
           className="rounded-full"
           src={`http://ddragon.leagueoflegends.com/cdn/13.1.1/img/profileicon/${user.RiotProfileIconId}.png`}
           alt="Profile Icon"
-          width={60}
-          height={60}
+          width={40}
+          height={40}
         />
       ) : (
         <div className="w-[40px] h-[40px] rounded-full bg-slate-800 group-hover:bg-slate-500"></div>
       )}
       <div>
-        <UserLinkName className="flex-1 block w-48 overflow-hidden text-2xl whitespace-nowrap text-ellipsis">
+        <UserLinkName className="flex-1 block overflow-hidden 2xl:text-2xl xl:text-xl lg:text-lg md:text-base w-36 whitespace-nowrap text-ellipsis">
           {user.summonerName}
         </UserLinkName>
       </div>
@@ -47,7 +47,7 @@ export default function UserInfoBar({ user }: { user: User }) {
           <TierImage tier={user.tier} width={60} height={60} />
         </div>
       ) : (
-        <p className="w-20 text-center">언랭크</p>
+        <p className="w-[60px] whitespace-nowrap text-center">언랭크</p>
       )}
       <ul className="flex justify-center w-[240px]">
         <PositionImage
@@ -57,7 +57,7 @@ export default function UserInfoBar({ user }: { user: User }) {
         />
       </ul>
       <WinRateBar user={user} big />
-      <UserMatchHistory user={user} big count={10} />
+      {/* <UserMatchHistory user={user} big count={10} /> */}
     </div>
   );
 }

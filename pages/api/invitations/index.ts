@@ -52,7 +52,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       });
     }
 
-    if (!invitingPosition) {
+    if (invitingPosition === undefined) {
       return res.status(400).json({
         ok: false,
         message: "포지션을 선택해주세요.",
@@ -68,7 +68,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           select: {
             id: true,
             chiefId: true,
-            users: {
+            members: {
               select: {
                 id: true,
               },
@@ -97,11 +97,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         .json({ ok: false, message: "팀장만 초대할 수 있습니다." });
     }
 
-    if (invitingUser.team.users.find((user) => user.id === invitedId)) {
+    if (invitingUser.team.members.find((user) => user.id === invitedId)) {
       return res.status(400).json({ ok: false, message: "이미 팀원입니다." });
     }
 
-    if (invitingUser.team.users.length >= 5) {
+    if (invitingUser.team.members.length >= 5) {
       return res
         .status(400)
         .json({ ok: false, message: "팀원은 5명까지 초대할 수 있습니다." });

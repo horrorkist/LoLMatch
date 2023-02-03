@@ -13,7 +13,7 @@ export default function InfoSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="h-auto p-4 min-w-[140px] w-52">
+    <div className="h-auto p-4 min-w-[208px] w-52">
       <ul className="space-y-4">
         {pathArray.map((path) => (
           <li

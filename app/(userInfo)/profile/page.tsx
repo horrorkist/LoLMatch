@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -31,14 +30,6 @@ const TierArray = [
 ];
 
 export default function Profile() {
-  const session = useSession({
-    required: true,
-    onUnauthenticated() {
-      alert("로그인이 필요합니다.");
-      router.push("/");
-    },
-  });
-  const router = useRouter();
   const [positions, setPositions] = useState<number[]>([0]);
   const { data: userData, isLoading } = useSWR(`/api/users/me`);
 
@@ -94,12 +85,6 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (session.status === "authenticated" && !isLoading && userData) {
-      setPositions(JSON.parse(userData.user?.positions || "[0]"));
-    }
-  }, [userData, session, isLoading]);
-
-  useEffect(() => {
     if (data && data.ok) {
       alert("정보가 수정되었습니다.");
       return;
@@ -110,17 +95,9 @@ export default function Profile() {
     }
   }, [data]);
 
-  if (session.status === "loading") {
-    return (
-      <div className="flex items-center justify-center flex-1 text-2xl">
-        로그인 인증 중...
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center flex-1 text-2xl">
+      <div className="flex items-center justify-center flex-1 text-2xl text-white">
         정보를 불러 오는 중...
       </div>
     );
@@ -136,17 +113,21 @@ export default function Profile() {
           <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
             <div className="flex items-center pl-2 space-x-4">
               <p>소환사 명</p>
-              <UserLinkName>{userData.user.summonerName}</UserLinkName>
+              <UserLinkName>{userData.user?.summonerName}</UserLinkName>
             </div>
             <div className="flex items-center pl-2 space-x-4">
               <p className="">티어</p>
-              {userData.user.tier ? (
+              {userData.user?.tier ? (
                 <>
-                  <TierImage tier={userData.user.tier} width={40} height={40} />
+                  <TierImage
+                    tier={userData.user?.tier}
+                    width={40}
+                    height={40}
+                  />
                   <div className="flex">
-                    <p>{TierArray[userData.user.tier]}</p>
+                    <p>{TierArray[userData.user?.tier]}</p>
                     &nbsp;
-                    <p>{userData.user.rank}</p>
+                    <p>{userData.user?.rank}</p>
                   </div>
                 </>
               ) : (
@@ -158,7 +139,7 @@ export default function Profile() {
                 <li className="flex flex-col space-y-2">
                   <p className="pl-2">선호 포지션</p>
                   <PositionSelect
-                    positions={JSON.parse(userData.positions || "[0]")}
+                    positions={JSON.parse(userData?.user?.positions || "[0]")}
                   />
                 </li>
               </ul>

@@ -42,9 +42,9 @@ function Header() {
       >
         <Link href={"/"}>My App</Link>
         <div className="flex items-center space-x-4 text-base">
+          <Link href="/profile">내 정보</Link>
           {session ? (
             <>
-              <Link href="/profile">내 정보</Link>
               <button onClick={handleLogoutClick}>로그아웃</button>
             </>
           ) : (

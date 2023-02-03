@@ -11,7 +11,7 @@ type UseMutaionResult<T> = [
   UseMutaionState<T>
 ];
 
-type Methods = "POST" | "PATCH";
+type Methods = "POST" | "PATCH" | "DELETE";
 
 export default function useMutation<T = any>(url: string): UseMutaionResult<T> {
   const [loading, setLoading] = useState(false);

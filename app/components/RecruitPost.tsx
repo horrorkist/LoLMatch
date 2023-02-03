@@ -1,7 +1,5 @@
-import { User } from "@prisma/client";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { TeamWithMembers } from "../(userInfo)/team/page";
 import TierImage from "./TierImage";
 import TierRangeSelect from "./TierRangeSelect";

@@ -17,11 +17,9 @@ import { AnimatePresence } from "framer-motion";
 import UserInfoBar from "../../components/UserInfoBar";
 import UserLinkName from "../../components/UserLinkName";
 import TierImage from "../../components/TierImage";
-import UserProfileIcon from "../../components/UserProfileIcon";
-import WinRateBar from "../../components/WinRateBar";
-import UserMatchHistory from "../../components/UserMatchHistory";
 import PositionImage from "../../components/PositionImage";
 import JoinRequestModal from "../../components/JoinRequestModal";
+import useMutation from "../../../lib/client/useMutation";
 
 export interface RequestWithUser extends Request {
   sentUser: User;
@@ -85,6 +83,9 @@ export default function TeamInfo() {
   });
   const { data: userData, isLoading: userLoading } = useSWR("/api/users/me");
   const [isChief, setIsChief] = useState(false);
+  const [mutateExit, { data: exitData, loading: exitLoading }] = useMutation(
+    "api/team/members/me"
+  );
 
   const closeModal = () => {
     setInModal(false);
@@ -156,6 +157,20 @@ export default function TeamInfo() {
     setModalType(ModalType.REQUEST);
   };
 
+  const onExitClick = () => {
+    if (exitLoading) {
+      alert("잠시만 기다려주세요.");
+      return;
+    }
+
+    mutateExit(
+      {
+        teamId: data?.team?.id,
+      },
+      "DELETE"
+    );
+  };
+
   useEffect(() => {
     if (inModal) {
       document.body.style.overflow = "hidden";
@@ -171,16 +186,20 @@ export default function TeamInfo() {
   }, [data]);
 
   useEffect(() => {
-    console.log(data);
-  }, [data]);
+    if (exitData && exitData.ok) {
+      alert("팀에서 탈퇴했습니다.");
+      teamMutate({
+        ok: false,
+        message: "존재하지 않는 팀입니다.",
+      });
+      return;
+    }
 
-  if (session.status === "loading") {
-    return (
-      <div className="flex items-center justify-center flex-1 text-2xl">
-        로그인 인증 중...
-      </div>
-    );
-  }
+    if (exitData && !exitData.ok) {
+      alert(exitData.message);
+      return;
+    }
+  }, [exitData]);
 
   if (isLoading) {
     return (
@@ -215,7 +234,7 @@ export default function TeamInfo() {
   }
 
   return (
-    <div className="flex flex-1">
+    <div className="flex justify-between flex-1">
       <AnimatePresence>
         {inModal && modalType === ModalType.EDIT && (
           <Overlay closeModal={closeModal}>
@@ -233,11 +252,12 @@ export default function TeamInfo() {
               closeModal={closeModal}
               request={clickedRequest}
               teamId={data?.team?.id!}
+              teamMutate={teamMutate}
             />
           </Overlay>
         )}
       </AnimatePresence>
-      <div className="flex flex-col w-2/3 px-12 py-8 space-y-4 min-w-min">
+      <div className="flex flex-col w-full px-12 py-8 space-y-4">
         <h1 className="flex items-center justify-start w-full text-3xl text-white">
           <p>{data?.team?.name}</p>
           {isChief ? (
@@ -258,7 +278,7 @@ export default function TeamInfo() {
             </>
           ) : (
             <Button
-              onClick={() => console.log("팀 탈퇴하기")}
+              onClick={onExitClick}
               cancel
               className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
             >
@@ -266,7 +286,7 @@ export default function TeamInfo() {
             </Button>
           )}
         </h1>
-        <div className="flex-1">
+        <div className="">
           <section className="flex flex-col w-full h-full overflow-hidden rounded-md bg-slate-400">
             <header className="flex p-4 space-x-8 text-white border-b border-black">
               <div className="flex flex-col space-y-2">
@@ -294,7 +314,12 @@ export default function TeamInfo() {
               </div>
             </header>
             <section className="grid flex-1 grid-cols-1 grid-rows-5 space-y-1">
+              <UserInfoBar
+                key={`teamuserinfo${data?.team?.id}`}
+                user={data?.team?.chief!}
+              />
               {data?.team?.members.map((user) => {
+                if (user.id === data?.team?.chief?.id) return;
                 return (
                   <UserInfoBar key={`teamuserinfo${user.id}`} user={user} />
                 );
@@ -303,11 +328,13 @@ export default function TeamInfo() {
           </section>
         </div>
       </div>
-      <div className="flex flex-col w-1/3 min-w-[300px] px-12 py-8 space-y-4 bg-blue-300">
-        <h1 className="text-3xl text-white">가입 신청 목록</h1>
+      <div className="flex flex-col max-w-sm p-4 space-y-4 bg-blue-300">
+        <h1 className="font-semibold text-white 2xl:text-2xl xl:text-xl">
+          가입 신청 목록
+        </h1>
         <div className="flex-1">
           <section className="w-full h-full bg-white rounded-md">
-            <ul className="flex flex-col h-full space-y-1 overflow-scroll">
+            <ul className="flex flex-col w-[250px] h-full space-y-1 overflow-scroll">
               {data?.team?.receivedRequests?.map((request) => {
                 return (
                   <li
@@ -328,7 +355,7 @@ export default function TeamInfo() {
                         />
                       </div>
                     ) : (
-                      <p className="w-20 text-center">언랭크</p>
+                      <p className="text-center whitespace-nowrap">언랭크</p>
                     )}
                     <UserLinkName className="overflow-hidden w-[100px] whitespace-nowrap text-ellipsis">
                       {request.summonerName}
@@ -338,8 +365,8 @@ export default function TeamInfo() {
                       height={40}
                       positions={request?.position || "[0]"}
                     />
-                    <WinRateBar user={request.sentUser} />
-                    <UserMatchHistory user={request.sentUser} count={5} />
+                    {/* <WinRateBar user={request.sentUser} />
+                    <UserMatchHistory user={request.sentUser} count={5} /> */}
                   </li>
                 );
               })}

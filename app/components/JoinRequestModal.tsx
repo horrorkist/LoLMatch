@@ -1,3 +1,4 @@
+import { Request } from "@prisma/client";
 import { useEffect } from "react";
 import { RequestWithUser } from "../(userInfo)/team/page";
 import useMutation from "../../lib/client/useMutation";
@@ -12,6 +13,13 @@ interface JoinRequestModalProps {
   request: RequestWithUser;
   closeModal: () => void;
   teamId: string;
+  teamMutate: any;
+}
+
+interface JoinRequestResponse {
+  ok: boolean;
+  request?: Request;
+  message?: string;
 }
 
 const PositionArray = ["상관없음", "탑", "정글", "미드", "원딜", "서폿"];
@@ -32,8 +40,12 @@ export default function JoinRequestModal({
   request,
   closeModal,
   teamId,
+  teamMutate,
 }: JoinRequestModalProps) {
   const [mutate, { data, loading }] = useMutation("/api/team/members");
+  const [mutateRequest, { data: requestData, loading: requestLoading }] =
+    useMutation<JoinRequestResponse>("/api/joinRequests");
+
   const onAcceptClick = () => {
     if (loading) {
       alert("잠시만 기다려주세요.");
@@ -45,14 +57,32 @@ export default function JoinRequestModal({
         teamId,
         requestId: request.id,
       },
-      "PATCH"
+      "POST"
     );
+  };
+
+  const onDeclineClick = () => {
+    if (requestLoading) {
+      alert("잠시만 기다려주세요.");
+      return;
+    }
+
+    if (confirm("정말로 거절하시겠습니까?")) {
+      mutateRequest(
+        {
+          teamId,
+          requestId: request.id,
+        },
+        "PATCH"
+      );
+    }
   };
 
   useEffect(() => {
     if (data && data.ok) {
       alert("가입 신청을 수락했습니다.");
       closeModal();
+      teamMutate();
       return;
     }
 
@@ -61,11 +91,25 @@ export default function JoinRequestModal({
       return;
     }
   }, [data]);
+
+  useEffect(() => {
+    if (requestData && requestData.ok) {
+      closeModal();
+      teamMutate();
+      return;
+    }
+
+    if (requestData && !requestData.ok) {
+      alert(requestData.message);
+      return;
+    }
+  }, [requestData]);
   return (
     <ModalWrapper>
       <div>
-        <header className="flex items-center p-4 border-b-2 border-gray-300">
+        <header className="flex items-center justify-between p-4 border-b-2 border-gray-300">
           <p>가입 신청</p>
+          <button onClick={closeModal}>X</button>
         </header>
         <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
           <div className="flex space-x-6">
@@ -108,8 +152,8 @@ export default function JoinRequestModal({
             <p className="whitespace-nowrap">포지션으로 신청했습니다.</p>
           </div>
           <div className="flex justify-evenly">
-            <Button onClick={closeModal} className="w-1/3" cancel>
-              취소
+            <Button onClick={onDeclineClick} className="w-1/3" cancel>
+              거절
             </Button>
             <Button onClick={onAcceptClick} className="w-1/3">
               수락

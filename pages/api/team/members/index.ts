@@ -21,7 +21,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
-  if (req.method === "PATCH") {
+  if (req.method === "POST") {
     const { teamId, requestId } = req.body;
 
     if (!teamId || !requestId) {
@@ -107,8 +107,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       },
     });
 
-    console.log(request);
-
     if (!request) {
       return res.status(404).json({
         ok: false,
@@ -147,6 +145,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               id: request.sentUser.id,
             },
           },
+        },
+      });
+
+      await client.request.delete({
+        where: {
+          id: requestId,
         },
       });
 
