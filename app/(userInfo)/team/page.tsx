@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Overlay from "../../components/Overlay";
 import PositionSelect from "../../components/PositionSelect";
@@ -20,6 +19,7 @@ import TierImage from "../../components/TierImage";
 import PositionImage from "../../components/PositionImage";
 import JoinRequestModal from "../../components/JoinRequestModal";
 import useMutation from "../../../lib/client/useMutation";
+import useLoggedIn from "../../../lib/client/useLoggedIn";
 
 export interface RequestWithUser extends Request {
   sentUser: User;
@@ -60,7 +60,7 @@ enum ModalType {
 }
 
 export default function TeamInfo() {
-  const session = useSession();
+  const [loggedIn, _] = useLoggedIn();
   const [inModal, setInModal] = useState(false);
   const [modalType, setModalType] = useState<ModalType>();
   const [clickedRequest, setClickedRequest] = useState<RequestWithUser>();
@@ -132,7 +132,7 @@ export default function TeamInfo() {
   };
 
   const onCreateClick = () => {
-    if (session?.status !== "authenticated") {
+    if (!loggedIn) {
       alert("로그인 후 이용해주세요.");
       return;
     }

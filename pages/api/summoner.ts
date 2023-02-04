@@ -7,8 +7,6 @@ export default async function handler(
 ) {
   const summoner = await getSummonerInfoBySummonerName("달려라불사조");
 
-  console.log(summoner);
-
   return res.end();
 }
 

@@ -1,10 +1,12 @@
 "use client";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import AbcIcon from "@mui/icons-material/Abc";
+import useLoggedIn from "../../lib/client/useLoggedIn";
 
 function Header() {
-  const { data: session } = useSession();
+  const [loggedIn, loading] = useLoggedIn();
   const pathName = usePathname();
 
   const handleLoginClick = async () => {
@@ -42,8 +44,9 @@ function Header() {
       >
         <Link href={"/"}>My App</Link>
         <div className="flex items-center space-x-4 text-base">
+          <AbcIcon />
           <Link href="/profile">내 정보</Link>
-          {session ? (
+          {loggedIn ? (
             <>
               <button onClick={handleLogoutClick}>로그아웃</button>
             </>

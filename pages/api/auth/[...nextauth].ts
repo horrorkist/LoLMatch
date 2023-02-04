@@ -4,7 +4,6 @@ import NaverProvider from "next-auth/providers/naver";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "../../../lib/server/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { signIn } from "next-auth/react";
 
 const API_ENTRY_POINT = "https://localhost:3000";
 
@@ -28,6 +27,9 @@ export const authOptions: NextAuthOptions = {
       };
       return session;
     },
+  },
+  pages: {
+    signIn: "/signIn",
   },
 };
 

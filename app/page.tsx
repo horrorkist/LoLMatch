@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import {
   ChangeEvent,
   ChangeEventHandler,
@@ -16,7 +15,7 @@ import PostTypeButtons from "./components/PostTypeButtons";
 import QTypeSelect from "./components/QTypeSelect";
 import RecruitPostModal from "./components/RecruitPostModal";
 import TierRangeSelect from "./components/TierRangeSelect";
-import useSWR, { preload } from "swr";
+import useSWR from "swr";
 import Link from "next/link";
 import Overlay from "./components/Overlay";
 import CreateTeamModal from "./components/CreateTeamModal";
@@ -29,6 +28,7 @@ import { TeamWithMembers } from "./(userInfo)/team/page";
 import JoinPostModal from "./components/JoinPostModal";
 import { AnimatePresence } from "framer-motion";
 import Spinner from "./components/Spinner";
+import useLoggedIn from "../lib/client/useLoggedIn";
 
 export interface PostResponse {
   recruitPosts?: any;
@@ -111,7 +111,7 @@ function Home() {
     useSWR<UserResponse>("/api/users/me");
 
   // session
-  const session = useSession();
+  const [loggedIn, _] = useLoggedIn();
 
   // 변경 관리 함수
   const handlePositionChange = (
@@ -195,7 +195,7 @@ function Home() {
   };
 
   const handleCreateTeam = () => {
-    if (session.status === "unauthenticated") {
+    if (!loggedIn) {
       alert("로그인이 필요합니다.");
       return;
     }
@@ -207,10 +207,6 @@ function Home() {
     setInModal(true);
     setModalType(ModalType.REGISTER_PROFILE);
   };
-
-  useEffect(() => {
-    console.log(userData);
-  }, [userData]);
 
   // 데이터 로드
   // useEffect(() => {
@@ -274,9 +270,7 @@ function Home() {
         <div className="flex flex-row-reverse">
           {postType === PostType.JOIN ? (
             <Button onClick={handleRegister}>소환사 등록하기</Button>
-          ) : userData?.ok === false ||
-            !userData?.user?.teamId ||
-            session.status === "unauthenticated" ? (
+          ) : userData?.ok === false || !userData?.user?.teamId || loggedIn ? (
             <Button onClick={handleCreateTeam}>팀 만들기</Button>
           ) : userData.user.teamId ? (
             <Link href={"/team"}>
