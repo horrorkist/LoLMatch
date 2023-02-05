@@ -11,10 +11,10 @@ const SWROptions = {
   fetcher: (url: string) => fetch(url).then((res) => res.json()),
 };
 
-// const nobounds = ["/signIn", "/signUp"];
+const nobounds = ["/signIn", "/signUp"];
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  // const pathname = usePathname();
+  const pathname = usePathname();
   return (
     <html className="bg-slate-900">
       <head />
@@ -22,7 +22,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Provider>
           <SWRConfig value={SWROptions}>
             <div className="relative flex flex-col min-h-screen bg-slate-900">
-              <Header />
+              {/* <Header /> */}
+              {nobounds.includes(pathname || "") ? null : <Header />}
               {children}
             </div>
           </SWRConfig>

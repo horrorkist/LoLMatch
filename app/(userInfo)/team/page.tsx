@@ -20,6 +20,8 @@ import PositionImage from "../../components/PositionImage";
 import JoinRequestModal from "../../components/JoinRequestModal";
 import useMutation from "../../../lib/client/useMutation";
 import useLoggedIn from "../../../lib/client/useLoggedIn";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import Spinner from "../../components/Spinner";
 
 export interface RequestWithUser extends Request {
   sentUser: User;
@@ -86,6 +88,8 @@ export default function TeamInfo() {
   const [mutateExit, { data: exitData, loading: exitLoading }] = useMutation(
     "api/team/members/me"
   );
+  const [mutateMember, { data: memberData, loading: memberLoading }] =
+    useMutation("api/team/members");
 
   const closeModal = () => {
     setInModal(false);
@@ -175,6 +179,21 @@ export default function TeamInfo() {
     }
   };
 
+  const onBanClick = (id: string) => {
+    if (!isChief) return;
+    if (memberLoading) return alert("잠시만 기다려주세요.");
+
+    if (confirm("정말로 이 팀원을 내보내시겠습니까?")) {
+      mutateMember(
+        {
+          teamId: data?.team?.id,
+          memberId: id,
+        },
+        "DELETE"
+      );
+    }
+  };
+
   useEffect(() => {
     if (inModal) {
       document.body.style.overflow = "hidden";
@@ -204,6 +223,19 @@ export default function TeamInfo() {
       return;
     }
   }, [exitData]);
+
+  useEffect(() => {
+    if (memberData && memberData.ok) {
+      alert("팀원을 내보냈습니다.");
+      teamMutate();
+      return;
+    }
+
+    if (memberData && !memberData.ok) {
+      alert(memberData.message);
+      return;
+    }
+  }, [memberData]);
 
   if (isLoading) {
     return (
@@ -325,7 +357,20 @@ export default function TeamInfo() {
               {data?.team?.members.map((user) => {
                 if (user.id === data?.team?.chief?.id) return;
                 return (
-                  <UserInfoBar key={`teamuserinfo${user.id}`} user={user} />
+                  <div className="relative flex items-center" key={user.id}>
+                    <UserInfoBar user={user} />
+                    <div
+                      onClick={() => onBanClick(user.id)}
+                      className="absolute right-2 xl:text-[50px] cursor-pointer flex justify-center items-center h-fit lg:text-[30px] text-white hover:text-red-500 hover:rotate-45 transition-all"
+                    >
+                      {isChief &&
+                        (memberLoading ? (
+                          <Spinner />
+                        ) : (
+                          <RemoveCircleOutlineIcon fontSize="inherit" />
+                        ))}
+                    </div>
+                  </div>
                 );
               })}
             </section>
@@ -369,8 +414,6 @@ export default function TeamInfo() {
                       height={40}
                       positions={request?.position || "[0]"}
                     />
-                    {/* <WinRateBar user={request.sentUser} />
-                    <UserMatchHistory user={request.sentUser} count={5} /> */}
                   </li>
                 );
               })}

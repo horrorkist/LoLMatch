@@ -270,7 +270,7 @@ function Home() {
         <div className="flex flex-row-reverse">
           {postType === PostType.JOIN ? (
             <Button onClick={handleRegister}>소환사 등록하기</Button>
-          ) : userData?.ok === false || !userData?.user?.teamId || loggedIn ? (
+          ) : !userData?.user?.teamId || !loggedIn ? (
             <Button onClick={handleCreateTeam}>팀 만들기</Button>
           ) : userData.user.teamId ? (
             <Link href={"/team"}>

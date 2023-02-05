@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AbcIcon from "@mui/icons-material/Abc";
 import useLoggedIn from "../../lib/client/useLoggedIn";
+import { useEffect } from "react";
 
 function Header() {
   const [loggedIn, loading] = useLoggedIn();
@@ -35,6 +36,10 @@ function Header() {
     signOut();
   };
 
+  useEffect(() => {
+    console.log(loggedIn);
+  }, [loggedIn]);
+
   return (
     <header className="flex items-center justify-center w-full p-5 text-xl text-white bg-blue-500">
       <div
@@ -44,7 +49,6 @@ function Header() {
       >
         <Link href={"/"}>My App</Link>
         <div className="flex items-center space-x-4 text-base">
-          <AbcIcon />
           <Link href="/profile">내 정보</Link>
           {loggedIn ? (
             <>

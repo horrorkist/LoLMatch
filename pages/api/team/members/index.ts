@@ -165,6 +165,78 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         message: "Internal Server Error",
       });
     }
+  } else if (req.method === "DELETE") {
+    const { teamId, memberId } = req.body;
+
+    if (!teamId || !memberId) {
+      return res.status(400).json({
+        ok: false,
+        message: "잘못된 요청입니다.",
+      });
+    }
+
+    const team = await client.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      select: {
+        chiefId: true,
+        members: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!team) {
+      return res.status(404).json({
+        ok: false,
+        message: "존재하지 않는 팀입니다.",
+      });
+    }
+
+    if (team.chiefId !== userId) {
+      return res.status(403).json({
+        ok: false,
+        message: "권한이 없습니다.",
+      });
+    }
+
+    const member = team.members.find((member) => member.id === memberId);
+
+    if (!member) {
+      return res.status(404).json({
+        ok: false,
+        message: "존재하지 않는 팀원입니다.",
+      });
+    }
+
+    try {
+      const updatedTeam = await client.team.update({
+        where: {
+          id: teamId,
+        },
+        data: {
+          members: {
+            disconnect: {
+              id: memberId,
+            },
+          },
+        },
+      });
+
+      return res.status(200).json({
+        ok: true,
+        updatedTeam,
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        ok: false,
+        message: "Internal Server Error",
+      });
+    }
   } else {
     return res.status(405).json({
       ok: false,
