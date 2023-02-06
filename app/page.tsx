@@ -233,10 +233,6 @@ function Home() {
     }
   }, [inModal]);
 
-  useEffect(() => {
-    console.log(userData);
-  }, [userData]);
-
   return (
     <div className={`relative p-4`}>
       <AnimatePresence>

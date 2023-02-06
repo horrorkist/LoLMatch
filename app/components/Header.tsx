@@ -2,13 +2,34 @@
 import { signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import AbcIcon from "@mui/icons-material/Abc";
 import useLoggedIn from "../../lib/client/useLoggedIn";
-import { useEffect } from "react";
+import useSWR from "swr";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import { useContext, useEffect, useState } from "react";
+import { NotificationContext } from "./NotiProvider";
+
+interface CountResponse {
+  ok: boolean;
+  messsage?: string;
+  count: number;
+}
 
 function Header() {
   const [loggedIn, loading] = useLoggedIn();
   const pathName = usePathname();
+  const { prev, setPrev, count, setCount, hasNewData, setHasNewData } =
+    useContext(NotificationContext);
+  const { data: countData, isLoading } = useSWR<CountResponse>(
+    "/api/users/me/invitations/count",
+    {
+      refreshInterval: 15000,
+      onSuccess: (newData) => {
+        if (newData.ok) {
+          setCount(newData.count);
+        }
+      },
+    }
+  );
 
   const handleLoginClick = async () => {
     const response = await fetch("/api/ironsession");
@@ -37,8 +58,18 @@ function Header() {
   };
 
   useEffect(() => {
-    console.log(loggedIn);
-  }, [loggedIn]);
+    if (prev < count) {
+      setHasNewData(true);
+      setPrev(count);
+      return;
+    }
+
+    if (prev > count) {
+      setHasNewData(false);
+      setPrev(count);
+      return;
+    }
+  }, [count]);
 
   return (
     <header className="flex items-center justify-center w-full p-5 text-xl text-white bg-blue-500">
@@ -49,6 +80,27 @@ function Header() {
       >
         <Link href={"/"}>My App</Link>
         <div className="flex items-center space-x-4 text-base">
+          <div
+            className={`relative flex items-center justify-center hover:animate-none group ${
+              hasNewData ? "animate-pulse" : null
+            }`}
+          >
+            <NotificationsIcon />
+            <p className="absolute z-20 hidden px-4 py-2 bg-black rounded-md -inset-x-full w-min h-min group-hover:block whitespace-nowrap inset-y-8">
+              {hasNewData
+                ? "새로운 초대가 있습니다."
+                : "새로운 알림이 없습니다."}
+            </p>
+            {hasNewData && (
+              <>
+                <div className="absolute inset-auto w-1 h-1 bg-red-500 rounded-full"></div>
+                <Link
+                  href="/invitations"
+                  className="absolute inset-auto w-full h-full"
+                />
+              </>
+            )}
+          </div>
           <Link href="/profile">내 정보</Link>
           {loggedIn ? (
             <>

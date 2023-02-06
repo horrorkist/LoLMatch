@@ -82,8 +82,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         },
       });
 
+      if (!existing) {
+        return res.status(404).json({
+          ok: false,
+          message: "존재하지 않는 유저입니다.",
+        });
+      }
+
       if (
-        existing?.updatedAt &&
+        existing.summonerName !== null &&
+        existing.updatedAt &&
         Number(new Date()) - Number(existing.updatedAt) < 1000 * 30
       ) {
         return res.status(400).json({
@@ -229,6 +237,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       }
 
       req.session.user = {
+        ...req.session.user,
         id: user.id,
       };
 

@@ -1,9 +1,8 @@
 import { User } from "@prisma/client";
 import Image from "next/image";
-import PositionImage from "./PositionImage";
+import { getPositionSVG } from "./positionSVG";
 import TierImage from "./TierImage";
 import UserLinkName from "./UserLinkName";
-import UserMatchHistory from "./UserMatchHistory";
 import WinRateBar from "./WinRateBar";
 
 const PositionArray = ["_", "Top", "Jungle", "Mid", "Bot", "Support"];
@@ -23,10 +22,10 @@ const TierArray = [
 export default function UserInfoBar({ user }: { user: User }) {
   return (
     <div className="flex items-center w-full p-4 space-x-6 text-white bg-slate-500">
-      {user.RiotProfileIconId ? (
+      {user?.RiotProfileIconId ? (
         <Image
           className="rounded-full"
-          src={`http://ddragon.leagueoflegends.com/cdn/13.1.1/img/profileicon/${user.RiotProfileIconId}.png`}
+          src={`http://ddragon.leagueoflegends.com/cdn/13.1.1/img/profileicon/${user?.RiotProfileIconId}.png`}
           alt="Profile Icon"
           width={40}
           height={40}
@@ -36,27 +35,25 @@ export default function UserInfoBar({ user }: { user: User }) {
       )}
       <div>
         <UserLinkName className="flex-1 block overflow-hidden 2xl:text-2xl xl:text-xl lg:text-lg md:text-base w-36 whitespace-nowrap text-ellipsis">
-          {user.summonerName}
+          {user?.summonerName}
         </UserLinkName>
       </div>
-      {user.tier && user.tier > 0 ? (
-        <div className="flex flex-col items-center justify-between space-y-1">
-          <p className="text-base whitespace-nowrap">
-            {TierArray[user.tier]} {user.rank}
+      {user?.tier && user?.tier > 0 ? (
+        <div className="relative flex flex-col items-center justify-between space-y-1">
+          <p className="absolute text-sm -inset-y-4 whitespace-nowrap">
+            {TierArray[user?.tier]} {user?.rank}
           </p>
-          <TierImage tier={user.tier} width={60} height={60} />
+          <TierImage tier={user?.tier} width={40} height={40} />
         </div>
       ) : (
         <p className="w-[60px] whitespace-nowrap text-center">언랭크</p>
       )}
-      <ul className="flex justify-center w-[240px]">
-        <PositionImage
-          width={60}
-          height={60}
-          positions={user.positions || "[0]"}
-        />
+      <ul className="flex justify-center w-[160px]">
+        {JSON.parse(user?.positions || "[0]").map((position: number) =>
+          getPositionSVG(position)
+        )}
       </ul>
-      <WinRateBar user={user} big />
+      <WinRateBar user={user} />
       {/* <UserMatchHistory user={user} big count={10} /> */}
     </div>
   );

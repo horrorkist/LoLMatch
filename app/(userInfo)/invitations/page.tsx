@@ -1,13 +1,14 @@
 "use client";
 
 import { Invitation } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import RecruitPost from "../../components/RecruitPost";
 import { TeamWithMembers } from "../team/page";
 import Overlay from "../../components/Overlay";
 import InvitationModal from "../../components/InvitationModal";
+import { NotificationContext } from "../../components/NotiProvider";
 
 export interface InvitationWithTeam extends Invitation {
   sentTeam: TeamWithMembers;
@@ -28,6 +29,8 @@ export default function Invitations() {
   const [inInvitationModal, setInInvitationModal] = useState(false);
   const [clickedInvitation, setClickedInvitation] =
     useState<InvitationWithTeam>();
+  const { count, setCount, hasNewData, setHasNewData } =
+    useContext(NotificationContext);
 
   const closeModal = () => {
     setInInvitationModal(false);
@@ -37,6 +40,15 @@ export default function Invitations() {
     setClickedInvitation(invitation);
     setInInvitationModal(true);
   };
+
+  useEffect(() => {
+    setHasNewData(false);
+  }, []);
+  // useEffect(() => {
+  //   if (data && data.ok) {
+  //     setCount(data.invitations?.length!);
+  //   }
+  // }, [data]);
 
   useEffect(() => {
     if (inInvitationModal) {

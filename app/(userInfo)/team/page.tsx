@@ -16,12 +16,12 @@ import { AnimatePresence } from "framer-motion";
 import UserInfoBar from "../../components/UserInfoBar";
 import UserLinkName from "../../components/UserLinkName";
 import TierImage from "../../components/TierImage";
-import PositionImage from "../../components/PositionImage";
 import JoinRequestModal from "../../components/JoinRequestModal";
 import useMutation from "../../../lib/client/useMutation";
 import useLoggedIn from "../../../lib/client/useLoggedIn";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Spinner from "../../components/Spinner";
+import { getPositionSVG } from "../../components/positionSVG";
 
 export interface RequestWithUser extends Request {
   sentUser: User;
@@ -126,6 +126,7 @@ export default function TeamInfo() {
             alert("팀을 해체했습니다.");
             teamMutate({
               ok: false,
+              message: "존재하지 않는 팀입니다.",
             });
           } else {
             alert(data.message);
@@ -322,7 +323,7 @@ export default function TeamInfo() {
             </Button>
           )}
         </h1>
-        <div className="">
+        <div className="h-full">
           <section className="flex flex-col w-full h-full overflow-hidden rounded-md bg-slate-400">
             <header className="flex p-4 space-x-8 text-white border-b border-black">
               <div className="flex flex-col space-y-2">
@@ -409,11 +410,13 @@ export default function TeamInfo() {
                     <UserLinkName className="overflow-hidden w-[100px] whitespace-nowrap text-ellipsis">
                       {request.summonerName}
                     </UserLinkName>
-                    <PositionImage
-                      width={40}
-                      height={40}
-                      positions={request?.position || "[0]"}
-                    />
+                    <div className="flex items-center justify-center">
+                      {JSON.parse(request?.position || "[0]").map(
+                        (position: number) => {
+                          return getPositionSVG(position);
+                        }
+                      )}
+                    </div>
                   </li>
                 );
               })}

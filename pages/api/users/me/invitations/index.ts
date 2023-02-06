@@ -1,9 +1,9 @@
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]";
-import client from "../../../../lib/server/client";
-import { sessionOptions } from ".";
+import { authOptions } from "../../../auth/[...nextauth]";
+import client from "../../../../../lib/server/client";
+import { sessionOptions } from "..";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const NextAuthSession = await unstable_getServerSession(

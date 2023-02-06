@@ -1,4 +1,5 @@
 import { IFilterParams } from "../page";
+import { getPositionSVG } from "./positionSVG";
 
 interface PositionSelectProps {
   handlePositionChange?: (e: React.MouseEvent<HTMLLIElement>) => void;
@@ -23,10 +24,7 @@ export default function PositionSelect({
               positions?.includes(i) ? "bg-blue-500" : "bg-slate-500"
             }`}
           >
-            {PositionObj[i]}
-            <div className="absolute z-10 flex items-center justify-center w-24 py-2 text-white transition-transform delay-300 origin-top scale-0 bg-black opacity-0 select-none group-hover:duration-300 group-hover:opacity-100 hover:hidden group hover:transition-none group-hover:transition-all duration-0 group-hover:scale-100 -left-1/2 -bottom-full position-name">
-              숨겨진 상자
-            </div>
+            {getPositionSVG(i)}
           </li>
         ))}
       </ul>

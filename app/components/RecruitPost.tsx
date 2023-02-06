@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { TeamWithMembers } from "../(userInfo)/team/page";
+import { getPositionSVG } from "./positionSVG";
 import TierImage from "./TierImage";
 import TierRangeSelect from "./TierRangeSelect";
 import UserLinkName from "./UserLinkName";
@@ -74,8 +75,8 @@ export default function RecruitPost({
           {team?.chief?.summonerName}
         </UserLinkName>
         {team?.chief?.tier && team?.chief?.tier > 0 ? (
-          <div className="flex flex-col items-center justify-between w-20 space-y-1">
-            <p className="text-[10px]">
+          <div className="relative flex flex-col items-center justify-between w-20 space-y-1">
+            <p className="absolute -inset-y-3 text-[10px]">
               {TierArray[team?.chief?.tier]} {team?.chief?.rank}
             </p>
             <TierImage tier={team?.chief?.tier} width={30} height={30} />
@@ -85,21 +86,10 @@ export default function RecruitPost({
         )}
       </div>
       <ul className="flex justify-center min-w-[160px]">
-        {team?.positions && JSON.parse(team.positions)[0] === 0 ? (
-          <div>전부</div>
-        ) : (
-          team?.positions &&
+        {team?.positions &&
           JSON.parse(team.positions).map((position: number) => (
-            <li key={position}>
-              <Image
-                src={`/ranked-positions/Position_Plat-${PositionArray[position]}.png`}
-                alt="Position Icon"
-                width={40}
-                height={40}
-              />
-            </li>
-          ))
-        )}
+            <li key={position}>{getPositionSVG(position)}</li>
+          ))}
       </ul>
       <TierRangeSelect
         disabled

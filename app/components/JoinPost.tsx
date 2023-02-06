@@ -2,6 +2,7 @@ import { User } from "@prisma/client";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { getPositionSVG } from "./positionSVG";
 import TierImage from "./TierImage";
 import UserLinkName from "./UserLinkName";
 
@@ -87,14 +88,7 @@ export default function JoinPost({
               <div>상관없음</div>
             ) : (
               parsedPositions.map((position: number) => (
-                <li key={position}>
-                  <Image
-                    src={`/ranked-positions/Position_Plat-${PositionArray[position]}.png`}
-                    alt="Position Icon"
-                    width={40}
-                    height={40}
-                  />
-                </li>
+                <li key={position}>{getPositionSVG(position)}</li>
               ))
             )}
           </ul>

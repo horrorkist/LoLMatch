@@ -31,15 +31,15 @@ export default function RecruitPostModal({
   closeModal,
   team,
 }: RecruitPostModalProps) {
-  const { data, isLoading } = useSWR(`/api/users/me`);
+  const { data: user, isLoading } = useSWR(`/api/users/me`);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<UserInfoFormData>({
     values: {
-      summonerName: data?.user?.summonerName || "",
-      tier: data?.user?.tier || 0,
+      summonerName: user?.user?.summonerName || "",
+      tier: user?.user?.tier || 0,
     },
   });
 
@@ -76,6 +76,11 @@ export default function RecruitPostModal({
 
     if (selectedPosition.length >= 2) {
       alert("포지션은 1개만 선택해주세요.");
+      return;
+    }
+
+    if (user.user.teamId) {
+      alert("이미 팀에 가입되어 있습니다.");
       return;
     }
 
@@ -138,10 +143,10 @@ export default function RecruitPostModal({
   };
 
   useEffect(() => {
-    if (!isLoading && data.ok) {
-      setSelectedPosition(JSON.parse(data?.user?.positions || "[0]"));
+    if (!isLoading && user.ok) {
+      setSelectedPosition(JSON.parse(user?.user?.positions || "[0]"));
     }
-  }, [isLoading, data]);
+  }, [isLoading, user]);
 
   useEffect(() => {
     if (message) {
