@@ -294,88 +294,95 @@ export default function TeamInfo() {
           </Overlay>
         )}
       </AnimatePresence>
-      <div className="flex flex-col w-full px-12 py-8 space-y-4">
-        <h1 className="flex items-center justify-start w-full text-3xl text-white">
-          <p>{data?.team?.name}</p>
-          {isChief ? (
-            <>
-              <Button className="ml-4 text-sm" onClick={onEditclick}>
-                팀 정보 수정
-              </Button>
-              <Button className="ml-4 text-sm" onClick={onRegisterClick}>
-                모집 글 등록
-              </Button>
+      <div className="flex items-center justify-center w-full">
+        <div className="flex flex-col space-y-4 2xl:w-[1080px]">
+          <h1 className="flex items-center justify-start w-full text-3xl text-white">
+            <p>{data?.team?.name}</p>
+            {isChief ? (
+              <>
+                <Button className="ml-4 text-sm" onClick={onEditclick}>
+                  팀 정보 수정
+                </Button>
+                <Button className="ml-4 text-sm" onClick={onRegisterClick}>
+                  모집 글 등록
+                </Button>
+                <Button
+                  onClick={onDeleteClick}
+                  cancel
+                  className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
+                >
+                  팀 해체하기
+                </Button>
+              </>
+            ) : (
               <Button
-                onClick={onDeleteClick}
+                onClick={onExitClick}
                 cancel
                 className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
               >
-                팀 해체하기
+                팀 탈퇴하기
               </Button>
-            </>
-          ) : (
-            <Button
-              onClick={onExitClick}
-              cancel
-              className="ml-auto text-xs text-red-500 bg-white border border-black hover:bg-red-500 hover:text-white hover:border-black"
-            >
-              팀 탈퇴하기
-            </Button>
-          )}
-        </h1>
-        <div className="h-full">
-          <section className="flex flex-col w-full h-full overflow-hidden rounded-md bg-slate-400">
-            <header className="flex p-4 space-x-8 text-white border-b border-black">
-              <div className="flex flex-col space-y-2">
-                <p className="pl-2">큐 타입</p>
-                <QTypeSelect
-                  register={register}
-                  disabled
-                  value={data?.team?.qType}
-                />
-              </div>
-              <div className="flex flex-col space-y-2">
-                <p className="pl-2">모집 포지션</p>
-                <PositionSelect
-                  positions={JSON.parse(data?.team?.positions || "[0]")}
-                />
-              </div>
-              <div className="flex flex-col space-y-2">
-                <p className="pl-2">모집 티어</p>
-                <TierRangeSelect
-                  disabled
-                  register={register}
-                  minTier={data?.team?.minTier || 0}
-                  maxTier={data?.team?.maxTier || 9}
-                />
-              </div>
-            </header>
-            <section className="grid flex-1 grid-cols-1 grid-rows-5 space-y-1">
-              <UserInfoBar
-                key={`teamuserinfo${data?.team?.id}`}
-                user={data?.team?.chief!}
-              />
-              {data?.team?.members.map((user) => {
-                if (user.id === data?.team?.chief?.id) return;
-                return (
-                  <div className="relative flex items-center" key={user.id}>
-                    <UserInfoBar user={user} />
-                    <div
-                      onClick={() => onBanClick(user.id)}
-                      className="absolute right-2 xl:text-[50px] cursor-pointer flex justify-center items-center h-fit lg:text-[30px] text-white hover:text-red-500 hover:rotate-45 transition-all"
-                    >
-                      {isChief &&
-                        (memberLoading ? (
-                          <Spinner />
-                        ) : (
-                          <RemoveCircleOutlineIcon fontSize="inherit" />
-                        ))}
-                    </div>
-                  </div>
-                );
-              })}
+            )}
+          </h1>
+          <div className="h-full">
+            <section className="flex flex-col w-full h-full overflow-hidden rounded-md bg-slate-400">
+              <header className="flex p-4 space-x-8 text-white border-b border-black">
+                <div className="flex flex-col space-y-2">
+                  <p className="pl-2">큐 타입</p>
+                  <QTypeSelect
+                    register={register}
+                    disabled
+                    value={data?.team?.qType}
+                  />
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <p className="pl-2">모집 포지션</p>
+                  <PositionSelect
+                    positions={JSON.parse(data?.team?.positions || "[0]")}
+                  />
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <p className="pl-2">모집 티어</p>
+                  <TierRangeSelect
+                    disabled
+                    register={register}
+                    minTier={data?.team?.minTier || 0}
+                    maxTier={data?.team?.maxTier || 9}
+                  />
+                </div>
+              </header>
+              <ul className="grid flex-1 grid-cols-1 grid-rows-5 space-y-1">
+                <li className="relative w-full">
+                  <UserInfoBar
+                    key={`teamuserinfo${data?.team?.id}`}
+                    user={data?.team?.chief!}
+                  />
+                  <p className="absolute inset-y-0 flex items-center right-4">
+                    팀장
+                  </p>
+                </li>
+                {data?.team?.members.map((user) => {
+                  if (user.id === data?.team?.chief?.id) return;
+                  return (
+                    <li className="relative flex items-center" key={user.id}>
+                      <UserInfoBar user={user} />
+                      <div
+                        onClick={() => onBanClick(user.id)}
+                        className="absolute right-2 xl:text-[50px] cursor-pointer flex justify-center items-center h-fit lg:text-[30px] text-white hover:text-red-500 hover:rotate-45 transition-all"
+                      >
+                        {isChief &&
+                          (memberLoading ? (
+                            <Spinner />
+                          ) : (
+                            <RemoveCircleOutlineIcon fontSize="inherit" />
+                          ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </section>
-          </section>
+          </div>
         </div>
       </div>
       <div className="flex flex-col max-w-sm p-4 space-y-4 bg-blue-300">

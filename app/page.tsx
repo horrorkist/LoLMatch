@@ -77,6 +77,32 @@ const initialFilterParams: IFilterParams = {
 //   preloadFetcher
 // );
 
+interface EndPointProps {
+  postType: number;
+  firstCreatedAt: number | null;
+  lastCreatedAt: number | null;
+  positions: number[];
+  qType: number;
+  minTier: number;
+  maxTier: number;
+}
+
+const getAPIEndPoint = ({
+  postType,
+  firstCreatedAt,
+  lastCreatedAt,
+  positions,
+  qType,
+  minTier,
+  maxTier,
+}: EndPointProps) => {
+  return `/api/posts/${
+    PostTypeObj[postType]
+  }?firstCreatedAt=${firstCreatedAt}&lastCreatedAt=${lastCreatedAt}&limit=${limit}&positions=${JSON.stringify(
+    positions
+  )}&qType=${qType}&minTier=${minTier}&maxTier=${maxTier}`;
+};
+
 function Home() {
   // post 관련
   const [postType, setPostType] = useState(PostType.RECRUIT);

@@ -11,6 +11,8 @@ import ModalWrapper from "./ModalWrapper";
 import CancelModalButton from "./CancelModalButton";
 import TierImage from "./TierImage";
 import Spinner from "./Spinner";
+import WinRateBar from "./WinRateBar";
+import UserMatchHistory from "./UserMatchHistory";
 
 interface JoinPostModalProps {
   closeModal: () => void;
@@ -141,9 +143,15 @@ export default function JoinPostModal({
           </div>
           <section>
             <ul className="flex flex-col space-y-4 justify-evenly">
-              <li className="flex flex-col space-y-2">
-                <p className="pl-2">큐 타입</p>
-                <QTypeSelect disabled value={post?.qType} />
+              <li className="flex space-x-4">
+                <div className="flex flex-col space-y-2">
+                  <p className="pl-2">큐 타입</p>
+                  <QTypeSelect disabled value={post?.qType} />
+                </div>
+                <div className="flex flex-col space-y-4">
+                  <p>전적</p>
+                  <WinRateBar user={post?.user} />
+                </div>
               </li>
               <li className="flex flex-col space-y-2">
                 <p className="pl-2">선호 포지션</p>

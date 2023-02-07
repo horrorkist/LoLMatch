@@ -110,8 +110,11 @@ export default function CreateTeamModal({
       >
         <ul className="flex flex-col space-y-4 justify-evenly">
           <li className="flex items-center space-x-4">
-            <p className="pl-2">팀 이름</p>
+            <label htmlFor="name" className="w-16 pl-2">
+              팀 이름
+            </label>
             <input
+              id="name"
               {...register("name", {
                 required: "팀 이름을 입력해주세요.",
                 maxLength: {
@@ -124,8 +127,11 @@ export default function CreateTeamModal({
             />
           </li>
           <li className="flex items-center space-x-4">
-            <p className="pl-2">팀장</p>
+            <label htmlFor="chief" className="w-16 pl-2">
+              팀장
+            </label>
             <input
+              id="chief"
               {...register("summonerName", {
                 required: "팀장의 소환사 명을 입력해주세요.",
                 maxLength: {

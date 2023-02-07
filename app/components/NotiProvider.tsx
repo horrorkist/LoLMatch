@@ -3,17 +3,17 @@ import { createContext } from "react";
 interface NotificationContextProps {
   prev: number;
   count: number;
-  hasNewData: boolean;
+  hasNewInvitation: boolean;
   setPrev: (prev: number) => void;
   setCount: (count: number) => void;
-  setHasNewData: (hasNewData: boolean) => void;
+  setHasNewInvitation: (hasNewInvitation: boolean) => void;
 }
 
 export const NotificationContext = createContext<NotificationContextProps>({
   prev: 0,
   count: 0,
-  hasNewData: false,
+  hasNewInvitation: false,
   setPrev: () => {},
   setCount: () => {},
-  setHasNewData: () => {},
+  setHasNewInvitation: () => {},
 });

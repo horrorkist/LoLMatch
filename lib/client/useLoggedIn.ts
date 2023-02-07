@@ -9,8 +9,6 @@ export default function useLoggedIn() {
   const { data: IronSession, isLoading } = useSWR("/api/ironsession");
 
   useEffect(() => {
-    console.log("NextAuthSession", NextAuthSession);
-    console.log("IronSession", IronSession);
     if (NextAuthSession.status !== "loading" && !isLoading) {
       setLoggedIn(
         NextAuthSession.status === "authenticated" || IronSession?.user?.email

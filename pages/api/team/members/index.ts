@@ -12,7 +12,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     authOptions
   );
 
-  const userId = NextAuthSession?.user?.id;
+  const IronSession = req.session;
+
+  if (!NextAuthSession && !IronSession.user?.email) {
+    return res.status(401).json({
+      ok: false,
+      message: "세션 없음",
+    });
+  }
+
+  const userId = NextAuthSession?.user?.id || IronSession?.user?.id;
 
   if (!userId) {
     return res.status(401).json({

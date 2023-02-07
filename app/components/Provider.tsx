@@ -5,12 +5,19 @@ import { NotificationContext } from "./NotiProvider";
 function Provider({ children }: { children: ReactNode }) {
   const [prev, setPrev] = useState(0);
   const [count, setCount] = useState(0);
-  const [hasNewData, setHasNewData] = useState(false);
+  const [hasNewInvitation, setHasNewInvitation] = useState(false);
 
   return (
     <SessionProvider>
       <NotificationContext.Provider
-        value={{ prev, setPrev, count, hasNewData, setCount, setHasNewData }}
+        value={{
+          prev,
+          setPrev,
+          count,
+          hasNewInvitation,
+          setCount,
+          setHasNewInvitation,
+        }}
       >
         {children}
       </NotificationContext.Provider>

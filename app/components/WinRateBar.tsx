@@ -69,7 +69,7 @@ export default function WinRateBar({
         user.wins >= 0 &&
         user.losses >= 0 && (
           <p
-            className={`${
+            className={`font-bold ${
               Math.floor((user.wins / (user.losses + user.wins)) * 100) >= 50
                 ? "text-teal-500"
                 : "text-red-500"

@@ -10,7 +10,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { page, limit, filter } = req.query;
     const parsedFilter = JSON.parse(filter as string);
-    const { qType, positions, minTier, maxTier } = parsedFilter;
+    const { qType, positions } = parsedFilter;
+    let { minTier, maxTier } = parsedFilter;
+
+    if (minTier > maxTier) {
+      [minTier, maxTier] = [maxTier, minTier];
+    }
 
     try {
       if (positions.some((position: number) => position === 0)) {

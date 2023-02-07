@@ -49,8 +49,10 @@ export default function UserInfoBar({ user }: { user: User }) {
         <p className="w-[60px] whitespace-nowrap text-center">언랭크</p>
       )}
       <ul className="flex justify-center w-[160px]">
-        {JSON.parse(user?.positions || "[0]").map((position: number) =>
-          getPositionSVG(position)
+        {JSON.parse(user?.positions || "[0]").map(
+          (position: number, i: number) => (
+            <li key={i}>{getPositionSVG(position)}</li>
+          )
         )}
       </ul>
       <WinRateBar user={user} />

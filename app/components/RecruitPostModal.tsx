@@ -12,6 +12,7 @@ import ModalWrapper from "./ModalWrapper";
 import PositionSelect from "./PositionSelect";
 import QTypeSelect from "./QTypeSelect";
 import Spinner from "./Spinner";
+import TierImage from "./TierImage";
 import TierRangeSelect from "./TierRangeSelect";
 import TierSelect from "./TierSelect";
 import UserLinkName from "./UserLinkName";
@@ -161,9 +162,10 @@ export default function RecruitPostModal({
           <h1 className="p-4">{team?.name}</h1>
         </header>
         <main className="flex flex-col justify-between flex-1 p-4 space-y-6">
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4">
             <p>팀장</p>
             <UserLinkName>{team.chief.summonerName}</UserLinkName>
+            <TierImage tier={team.chief.tier!} width={30} height={30} />
           </div>
           <section>
             <ul className="flex flex-col space-y-4 justify-evenly">

@@ -29,7 +29,7 @@ export default function Invitations() {
   const [inInvitationModal, setInInvitationModal] = useState(false);
   const [clickedInvitation, setClickedInvitation] =
     useState<InvitationWithTeam>();
-  const { count, setCount, hasNewData, setHasNewData } =
+  const { count, setCount, hasNewInvitation, setHasNewInvitation } =
     useContext(NotificationContext);
 
   const closeModal = () => {
@@ -42,7 +42,7 @@ export default function Invitations() {
   };
 
   useEffect(() => {
-    setHasNewData(false);
+    setHasNewInvitation(false);
   }, []);
   // useEffect(() => {
   //   if (data && data.ok) {

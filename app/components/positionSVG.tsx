@@ -1,6 +1,6 @@
 export const AllSVG = () => (
   <svg
-    className="w-6 h-6 position-icon fill-white"
+    className="w-7 h-7 position-icon fill-white"
     viewBox="0 0 24 24"
     xmlns="http://www.w3.org/2000/svg"
     aria-label="포지션 전체"

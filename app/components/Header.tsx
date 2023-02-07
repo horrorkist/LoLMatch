@@ -17,8 +17,14 @@ interface CountResponse {
 function Header() {
   const [loggedIn, loading] = useLoggedIn();
   const pathName = usePathname();
-  const { prev, setPrev, count, setCount, hasNewData, setHasNewData } =
-    useContext(NotificationContext);
+  const {
+    prev,
+    setPrev,
+    count,
+    setCount,
+    hasNewInvitation,
+    setHasNewInvitation,
+  } = useContext(NotificationContext);
   const { data: countData, isLoading } = useSWR<CountResponse>(
     "/api/users/me/invitations/count",
     {
@@ -59,13 +65,13 @@ function Header() {
 
   useEffect(() => {
     if (prev < count) {
-      setHasNewData(true);
+      setHasNewInvitation(true);
       setPrev(count);
       return;
     }
 
     if (prev > count) {
-      setHasNewData(false);
+      setHasNewInvitation(false);
       setPrev(count);
       return;
     }
@@ -82,16 +88,16 @@ function Header() {
         <div className="flex items-center space-x-4 text-base">
           <div
             className={`relative flex items-center justify-center hover:animate-none group ${
-              hasNewData ? "animate-pulse" : null
+              hasNewInvitation ? "animate-pulse" : null
             }`}
           >
             <NotificationsIcon />
             <p className="absolute z-20 hidden px-4 py-2 bg-black rounded-md -inset-x-full w-min h-min group-hover:block whitespace-nowrap inset-y-8">
-              {hasNewData
+              {hasNewInvitation
                 ? "새로운 초대가 있습니다."
                 : "새로운 알림이 없습니다."}
             </p>
-            {hasNewData && (
+            {hasNewInvitation && (
               <>
                 <div className="absolute inset-auto w-1 h-1 bg-red-500 rounded-full"></div>
                 <Link
