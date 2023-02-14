@@ -385,52 +385,54 @@ export default function TeamInfo() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col max-w-sm p-4 space-y-4 bg-blue-300">
-        <h1 className="font-semibold text-white 2xl:text-2xl xl:text-xl">
-          가입 신청 목록
-        </h1>
-        <div className="flex-1">
-          <section className="w-full h-full bg-white rounded-md">
-            <ul className="flex flex-col w-[250px] h-full space-y-1 overflow-scroll">
-              {data?.team?.receivedRequests?.map((request) => {
-                return (
-                  <li
-                    onClick={() => onRequestClick(request)}
-                    className="flex items-center justify-start p-4 space-x-4 text-white cursor-pointer bg-slate-500 hover:bg-slate-400"
-                    key={request.id}
-                  >
-                    {request.sentUser.tier && request.sentUser.tier > 0 ? (
-                      <div className="flex flex-col items-center justify-between space-y-1">
-                        <p className="text-xs whitespace-nowrap">
-                          {TierArray[request.sentUser.tier]}{" "}
-                          {request.sentUser.rank}
-                        </p>
-                        <TierImage
-                          tier={request.sentUser.tier}
-                          width={40}
-                          height={40}
-                        />
-                      </div>
-                    ) : (
-                      <p className="text-center whitespace-nowrap">언랭크</p>
-                    )}
-                    <UserLinkName className="overflow-hidden w-[100px] whitespace-nowrap text-ellipsis">
-                      {request.summonerName}
-                    </UserLinkName>
-                    <div className="flex items-center justify-center">
-                      {JSON.parse(request?.position || "[0]").map(
-                        (position: number) => {
-                          return getPositionSVG(position);
-                        }
+      {isChief && (
+        <div className="flex flex-col max-w-sm p-4 space-y-4 bg-blue-300">
+          <h1 className="font-semibold text-white 2xl:text-2xl xl:text-xl">
+            가입 신청 목록
+          </h1>
+          <div className="flex-1">
+            <section className="w-full h-full bg-white rounded-md">
+              <ul className="flex flex-col w-[250px] h-full space-y-1 overflow-scroll">
+                {data?.team?.receivedRequests?.map((request) => {
+                  return (
+                    <li
+                      onClick={() => onRequestClick(request)}
+                      className="flex items-center justify-start p-4 space-x-4 text-white cursor-pointer bg-slate-500 hover:bg-slate-400"
+                      key={request.id}
+                    >
+                      {request.sentUser.tier && request.sentUser.tier > 0 ? (
+                        <div className="flex flex-col items-center justify-between space-y-1">
+                          <p className="text-xs whitespace-nowrap">
+                            {TierArray[request.sentUser.tier]}{" "}
+                            {request.sentUser.rank}
+                          </p>
+                          <TierImage
+                            tier={request.sentUser.tier}
+                            width={40}
+                            height={40}
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-center whitespace-nowrap">언랭크</p>
                       )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+                      <UserLinkName className="overflow-hidden w-[100px] whitespace-nowrap text-ellipsis">
+                        {request.summonerName}
+                      </UserLinkName>
+                      <div className="flex items-center justify-center">
+                        {JSON.parse(request?.position || "[0]").map(
+                          (position: number) => {
+                            return getPositionSVG(position);
+                          }
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

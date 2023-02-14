@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { TeamWithMembers } from "../(userInfo)/team/page";
+import CopySummonerName from "./CopySummonerName";
 import { getPositionSVG } from "./positionSVG";
 import TierImage from "./TierImage";
 import TierRangeSelect from "./TierRangeSelect";
@@ -59,7 +60,7 @@ export default function RecruitPost({
       <p className="block w-32 overflow-hidden whitespace-nowrap text-ellipsis">
         {team?.name}
       </p>
-      <div className="flex items-center space-x-3 w-[250px] h-full">
+      <div className="flex items-center space-x-3 w-[270px] h-full">
         {team?.chief?.RiotProfileIconId ? (
           <Image
             className="rounded-full"
@@ -74,6 +75,7 @@ export default function RecruitPost({
         <UserLinkName className="flex-1 block overflow-hidden text-sm whitespace-nowrap text-ellipsis">
           {team?.chief?.summonerName}
         </UserLinkName>
+        <CopySummonerName summonerName={team.chief.summonerName!} />
         {team?.chief?.tier && team?.chief?.tier > 0 ? (
           <div className="relative flex flex-col items-center justify-between w-20 space-y-1">
             <p className="absolute -inset-y-3 text-[10px]">

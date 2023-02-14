@@ -25,7 +25,7 @@ export default function WinRateBar({
           user.losses >= 0 && (
             <>
               <div
-                className={`h-full absolute flex left-0 px-1 items-center justify-start bg-blue-500`}
+                className={`h-full flex items-center justify-start bg-blue-500`}
                 style={{
                   width: `${Math.floor(
                     (user.wins / (user.losses + user.wins)) *
@@ -34,7 +34,7 @@ export default function WinRateBar({
                 }}
               >
                 <p
-                  className={`text-white whitespace-nowrap ${
+                  className={`text-white whitespace-nowrap absolute top-0 bottom-0 left-1 flex items-center z-20 ${
                     big ? "text-sm" : "text-xs"
                   }`}
                 >
@@ -42,7 +42,7 @@ export default function WinRateBar({
                 </p>
               </div>
               <div
-                className="absolute right-0 flex items-center justify-end h-full px-1 bg-red-500"
+                className="flex items-center justify-end h-full bg-red-500 "
                 style={{
                   width: `${
                     (big ? bigWidth : smallWidth) -
@@ -54,7 +54,7 @@ export default function WinRateBar({
                 }}
               >
                 <p
-                  className={`text-sm text-white whitespace-nowrap ${
+                  className={`text-white whitespace-nowrap absolute top-0 bottom-0 right-1 flex items-center z-20 ${
                     big ? "text-sm" : "text-xs"
                   }`}
                 >
@@ -69,7 +69,7 @@ export default function WinRateBar({
         user.wins >= 0 &&
         user.losses >= 0 && (
           <p
-            className={`font-bold ${
+            className={`font-bold w-10 ${
               Math.floor((user.wins / (user.losses + user.wins)) * 100) >= 50
                 ? "text-teal-500"
                 : "text-red-500"

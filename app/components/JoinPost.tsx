@@ -1,10 +1,12 @@
 import { User } from "@prisma/client";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
+import CopySummonerName from "./CopySummonerName";
 import { getPositionSVG } from "./positionSVG";
 import TierImage from "./TierImage";
 import UserLinkName from "./UserLinkName";
+import WinRateBar from "./WinRateBar";
 
 interface RecruitPostProps {
   onClick?: () => void;
@@ -38,6 +40,16 @@ export default function JoinPost({
   );
   const [winRate, setWinRate] = useState<number>(0);
   const [width, setWidth] = useState<number>(0);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopy = (e: any) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(user.summonerName!);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
+  };
 
   useEffect(() => {
     setParsedPositions(JSON.parse(user.positions || "[0]"));
@@ -56,7 +68,7 @@ export default function JoinPost({
       {...rest}
     >
       <div className="flex items-center w-full space-x-6">
-        <div className="flex items-center space-x-3 w-[250px] h-full">
+        <div className="flex items-center space-x-3 w-[270px] h-full">
           {user.RiotProfileIconId ? (
             <Image
               className="rounded-full"
@@ -71,6 +83,7 @@ export default function JoinPost({
           <UserLinkName className="flex-1 block overflow-hidden text-sm whitespace-nowrap text-ellipsis">
             {user.summonerName}
           </UserLinkName>
+          <CopySummonerName summonerName={user.summonerName!} />
           {user.tier && user.tier > 0 ? (
             <div className="flex flex-col items-center justify-between w-20 space-y-1">
               <p className="text-[10px]">
@@ -84,51 +97,12 @@ export default function JoinPost({
         </div>
         <div>
           <ul className="flex justify-center min-w-[160px]">
-            {parsedPositions[0] === 0 ? (
-              <div>상관없음</div>
-            ) : (
-              parsedPositions.map((position: number) => (
-                <li key={position}>{getPositionSVG(position)}</li>
-              ))
-            )}
+            {parsedPositions.map((position: number) => (
+              <li key={position}>{getPositionSVG(position)}</li>
+            ))}
           </ul>
         </div>
-        <div className="flex items-center w-40 space-x-2">
-          <div className="relative flex items-center w-32 h-8 overflow-hidden bg-gray-500 border border-white rounded-md">
-            {(user.wins || user.losses) && (
-              <>
-                <div
-                  className={`h-full absolute flex left-0 px-1 items-center justify-start bg-blue-500`}
-                  style={{ width: `${width}px` }}
-                >
-                  <p className="text-xs text-white whitespace-nowrap">
-                    {user.wins}승
-                  </p>
-                </div>
-                <div
-                  style={{ width: `${128 - width}px` }}
-                  className="absolute right-0 flex items-center justify-end w-full h-full px-1 bg-red-500"
-                >
-                  <p className="text-xs text-white whitespace-nowrap">
-                    {user.losses}패
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-          {user.wins !== null &&
-            user.losses !== null &&
-            user.wins >= 0 &&
-            user.losses >= 0 && (
-              <p
-                className={`text-xs ${
-                  winRate >= 50 ? "text-teal-500" : "text-red-500"
-                } `}
-              >
-                {winRate}%
-              </p>
-            )}
-        </div>
+        <WinRateBar user={user} />
         <div className="flex items-center border border-gray-400 divide-gray-400 divide-x-1 w-max">
           {user.matchHistory &&
             JSON.parse(user.matchHistory).length > 0 &&

@@ -5,6 +5,7 @@ import {
   ChangeEventHandler,
   MouseEvent,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import useSWRInfinite from "swr/infinite";
@@ -79,8 +80,8 @@ const initialFilterParams: IFilterParams = {
 
 interface EndPointProps {
   postType: number;
-  firstCreatedAt: number | null;
-  lastCreatedAt: number | null;
+  firstCreatedAt: number | undefined;
+  lastCreatedAt: number | undefined;
   positions: number[];
   qType: number;
   minTier: number;
@@ -103,11 +104,16 @@ const getAPIEndPoint = ({
   )}&qType=${qType}&minTier=${minTier}&maxTier=${maxTier}`;
 };
 
+const pollInterval = 1000 * 20;
+
 function Home() {
   // post 관련
+  const [posts, setPosts] = useState<any[]>([]);
+  const [totalPosts, setTotalPosts] = useState<number>(0);
   const [postType, setPostType] = useState(PostType.RECRUIT);
   const [filterParams, setFilterParams] =
     useState<IFilterParams>(initialFilterParams);
+  const intervalId = useRef<NodeJS.Timer>();
 
   // swr 관련
   const getKey = (pageIndex: number, previousPageData: any) => {
@@ -330,14 +336,14 @@ function Home() {
           {postType === PostType.RECRUIT ? (
             <div className="flex items-center w-full h-8 space-x-4 text-xs text-gray-400 bg-slate-600">
               <div className="w-[140px] pl-4 text-left">팀 이름</div>
-              <div className="w-[162px] text-center">팀장</div>
+              <div className="w-[182px] text-center">팀장</div>
               <div className="text-center w-[70px]">팀장 티어</div>
               <div className="text-center w-[175px]">모집 포지션</div>
               <div className="w-[210px] text-center">모집 티어</div>
             </div>
           ) : (
             <div className="flex items-center w-full h-8 space-x-4 text-xs text-gray-400 bg-slate-600">
-              <div className="w-[170px] pl-4 text-left">소환사 명</div>
+              <div className="w-[190px] pl-4 text-left">소환사 명</div>
               <div className="w-[62px] text-center">티어</div>
               <div className="text-center w-[195px]">선호 포지션</div>
               <div className="text-center w-[108px]">승률</div>

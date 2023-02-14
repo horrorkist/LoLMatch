@@ -15,7 +15,7 @@ export default function Overlay({
       exit={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
       transition={{ duration: 0.1, ease: "easeIn" }}
       onClick={closeModal}
-      className="fixed top-0 bottom-0 left-0 right-0 z-20 flex items-center justify-center w-screen h-screen overlay"
+      className="fixed top-0 bottom-0 left-0 right-0 z-50 flex items-center justify-center w-screen h-screen overlay"
     >
       {children}
     </motion.div>

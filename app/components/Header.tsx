@@ -84,7 +84,7 @@ function Header() {
           pathName === "/" ? "max-w-[900px]" : ""
         } w-full`}
       >
-        <Link href={"/"}>My App</Link>
+        <Link href={"/"}>LoL Match</Link>
         <div className="flex items-center space-x-4 text-base">
           <div
             className={`relative flex items-center justify-center hover:animate-none group ${
