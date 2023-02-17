@@ -1,6 +1,6 @@
-# Next.js + Tailwind CSS Example
+# LoL Match
 
-This example shows how to use [Tailwind CSS](https://tailwindcss.com/) [(v3.2)](https://tailwindcss.com/blog/tailwindcss-v3-2) with Next.js. It follows the steps outlined in the official [Tailwind docs](https://tailwindcss.com/docs/guides/nextjs).
+LoL Match는 조건에 맞는 리그오브레전드 팀원을 매칭하는 서비스입니다.
 
 ## Deploy your own
 

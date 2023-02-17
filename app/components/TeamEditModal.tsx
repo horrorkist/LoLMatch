@@ -16,6 +16,13 @@ interface TeamEditModalProps {
   team: Team;
 }
 
+interface TeamEditForm {
+  name: string;
+  qType: number;
+  minTier: number;
+  maxTier: number;
+}
+
 export default function TeamEditModal({
   closeModal,
   team,
@@ -24,7 +31,7 @@ export default function TeamEditModal({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<TeamData>({
+  } = useForm<TeamEditForm>({
     values: {
       name: team.name,
       qType: team.qType ? +team.qType : 0,
@@ -62,7 +69,7 @@ export default function TeamEditModal({
     setPositions(newPositions);
   };
 
-  const onSubmit = (data: TeamData) => {
+  const onSubmit = (data: TeamEditForm) => {
     if (loading) return;
     mutate(
       {
